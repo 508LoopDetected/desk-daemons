@@ -1,0 +1,33 @@
+{
+  "name": "Default Enemy",
+  "level": 1,
+  "stats": {
+    "hp": 100,
+    "mp": 50,
+    "strength": 10,
+    "vitality": 10,
+    "magic": 5,
+    "agility": 5,
+    "luck": 5
+  },
+  "resistances": {
+    "physical": "normal",
+    "fire": "normal",
+    "ice": "normal",
+    "electric": "normal",
+    "force": "normal",
+    "light": "normal",
+    "dark": "normal"
+  },
+  "skills": [],
+  "ailments": {
+    "poison": 0,
+    "confusion": 0,
+    "sleep": 0,
+    "silence": 0,
+    "fear": 0,
+    "rage": 0
+  },
+  "exp": 0,
+  "loot": []
+}
