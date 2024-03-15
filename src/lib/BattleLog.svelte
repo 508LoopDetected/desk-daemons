@@ -1,5 +1,6 @@
 <script>
   import { player, battleLog } from './stores.js';
+  import PressTurns from './PressTurns.svelte';
   export let currentEnemy;
 
   $: reversedBattleLog = [...$battleLog].reverse();
@@ -7,6 +8,7 @@
 
 
 <div class="battle-log">
+      <PressTurns player={$player} currentEnemy={currentEnemy} />
   {#each reversedBattleLog as logEntry}
     <p class={logEntry.type}>
       {#if logEntry.type === 'player-action'}
@@ -30,9 +32,8 @@
   .battle-log {
     display: flex;
     flex-direction: column-reverse;
-    border: 2px solid #444;
     padding: 10px;
-    background-color: #000;
+    background-color: #111;
     max-height: 60vh;
     font-family: 'Courier New', monospace;
     font-size: 1rem;
@@ -66,7 +67,7 @@
     text-align: center;
     font-weight: bold;
     padding: 10px;
-    margin: 5px 0;
+    margin: 15px 0;
   }
 
   .player-name {

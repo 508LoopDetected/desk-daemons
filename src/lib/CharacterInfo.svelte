@@ -1,10 +1,20 @@
 <script>
   export let character;
   export let type;
+  let htmlContent;
+  $: if (type === 'player') {
+    htmlContent = '<img class="avatar" src="skull.gif">';
+  } else {
+    htmlContent = '<img class="avatar" src="zesty.gif">';
+  }
 </script>
 
 <div class={`${type}-info`}>
-  <h3><span class={`${type}-sprite`}>{type === 'player' ? '😽' : '👹'}</span> {character.name}</h3>
+  <h3>
+    <span class={`${type}-sprite`}>
+      {@html htmlContent}
+    </span> {character.name}
+  </h3>
   <div class={`${type}-stats`}>
     <p><strong>HP:</strong> {character.stats.hp} | <strong>MP:</strong> {character.stats.mp}</p>
     <p>Level: {character.level}, Strength: {character.stats.strength}, Vitality: {character.stats.vitality}, Magic: {character.stats.magic}, Agility: {character.stats.agility}, Luck: {character.stats.luck}</p>
@@ -19,6 +29,9 @@
 </div>
 
 <style>
+  :global(.avatar) {
+    height: 52px;
+  }
   .resistances {
     column-count: 2;
     max-width: 350px;

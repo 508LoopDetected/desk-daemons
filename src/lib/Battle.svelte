@@ -5,7 +5,6 @@
   import { PRESS_TURN_MAX, calculateDamage, calculateHeal, applyAilment, updatePressTurns, updateAilmentDurations } from './battleUtils.js';
   import BattleLog from './BattleLog.svelte';
   import CharacterInfo from './CharacterInfo.svelte';
-  import PressTurns from './PressTurns.svelte';
 
   let currentEnemy = null;
   let isPlayerTurn = true; // player starts first
@@ -50,7 +49,7 @@
 
     let logMessage = `attacks ${defenderName} and deals ${damage} damage! (Attack Range: ${damageRange[0]}-${damageRange[1]})`;
     if (isCrit) {
-      logMessage += ' (Critical Hit!)';
+      logMessage += ' (Critical Hit! +1 Press Turn)';
     }
     /*$battleLog = [...$battleLog, { type: 'calculation', message: `Basic Attack Calculation:
       Attacker: ${attackerName}
@@ -169,7 +168,7 @@
           const attackRange = `${Math.round(damage * 0.9)}-${Math.round(damage * 1.1)}`;
           let logMessage = `used ${skill.name} and dealt ${damage} damage! (Attack Range: ${damageRange[0]}-${damageRange[1]})`;
           if (isCrit) {
-            logMessage += ' (Critical Hit!)';
+            logMessage += ' (Critical Hit! +1 Press Turn)';
             $player.pressTurns = Math.min($player.pressTurns, PRESS_TURN_MAX); // Ensure press turns don't exceed 3 on critical hit
           } else {
             $player.pressTurns = Math.max($player.pressTurns - 1, 0); // Decrease press turns on non-critical hit
@@ -274,7 +273,7 @@
               Damage: ${damage}` }];*/
             let logMessage = `used ${skill.name} and dealt ${damage} damage! (Attack Range: ${damageRange[0]}-${damageRange[1]})`;
             if (isCrit) {
-              logMessage += ' (Critical Hit!)';
+              logMessage += ' (Critical Hit! +1 Press Turn)';
               currentEnemy.pressTurns = Math.min(currentEnemy.pressTurns, PRESS_TURN_MAX); // Ensure press turns don't exceed 3 on critical hit
             } else {
               currentEnemy.pressTurns = Math.max(currentEnemy.pressTurns - 1, 0); // Decrease press turns on non-critical hit
@@ -368,7 +367,6 @@
         <br/><br/><button class="end-turn" on:click={endTurn} disabled={!isPlayerTurn}>End Turn</button>
       </div>
 
-      <PressTurns player={$player} currentEnemy={currentEnemy} />
     </div>
   {:else}
     <!-- nothing yet -->
