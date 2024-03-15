@@ -13,6 +13,7 @@
   let isActive = false;
   function toggleActive() { isActive = !isActive; }
 
+
   // DOOT DOOT
   onMount(() => {
       currentEnemy = $enemies[Math.floor(Math.random() * $enemies.length)];
@@ -20,7 +21,7 @@
       $player = { ...$player, pressTurns: PRESS_TURN_MAX };
       currentEnemy.pressTurns = PRESS_TURN_MAX;
       $battleLog = [...$battleLog, { type: 'system-message', message: `A wild ${currentEnemy.name} appeared!` }];
-   });
+  });
 
 
   function basicAttack(attacker, defender) {
@@ -66,9 +67,9 @@
     if (attacker === $player) {
       currentEnemy.stats.hp = Math.max(currentEnemy.stats.hp - damage, 0); // update enemy HP display
       if (isCrit) {
-        $player.pressTurns = Math.min($player.pressTurns, PRESS_TURN_MAX); // Ensure press turns don't exceed 3 on critical hit
+        $player.pressTurns = Math.min($player.pressTurns, PRESS_TURN_MAX); // don't exceed max turns
       } else {
-        $player.pressTurns = Math.max($player.pressTurns - 1, 0); // Decrease press turns on non-critical hit
+        $player.pressTurns = Math.max($player.pressTurns - 1, 0); // no crit, decrease press turn
       }
       //$battleLog = [...$battleLog, { type: 'system-message', message: 'end player attack' }];
 
@@ -77,9 +78,9 @@
       }
     } else {
       if (isCrit) {
-        currentEnemy.pressTurns = Math.min(currentEnemy.pressTurns, PRESS_TURN_MAX); // Ensure press turns don't exceed 3 on critical hit
+        currentEnemy.pressTurns = Math.min(currentEnemy.pressTurns, PRESS_TURN_MAX); // don't exceed max turns
       } else {
-        currentEnemy.pressTurns = Math.max(currentEnemy.pressTurns - 1, 0); // Decrease press turns on non-critical hit
+        currentEnemy.pressTurns = Math.max(currentEnemy.pressTurns - 1, 0); // no crit, decrease press turn
       }
       //$battleLog = [...$battleLog, { type: 'system-message', message: 'end enemy attack' }];
 
@@ -122,45 +123,50 @@
         $battleLog = [...$battleLog, { type: 'player-action', message: `used ${skill.name} and healed ${healAmount} HP!` }];
         $player.pressTurns = Math.max($player.pressTurns - 1, 0); // Decrease press turn
       } else if (skill.type === "ailment") {
+        // do some Ailment stuff to the enemy
         if (!currentEnemy.ailments || !currentEnemy.ailments[skill.ailment]) {
+          // enemy isn't afflicted yet, so..
           const isAilmentApplied = applyAilment($player, currentEnemy, skill);
           if (isAilmentApplied) {
+            // successful cast
             $battleLog = [...$battleLog, { type: 'player-action', message: `tried casting ${skill.name} on ${currentEnemy.name}!` }];
             $battleLog = [...$battleLog, { type: 'status-effect', message: `${currentEnemy.name} is afflicted with ${skill.ailment}!` }];
           } else {
+            // failed cast
             $battleLog = [...$battleLog, { type: 'player-action', message: `tried casting ${skill.name}...but it failed!` }];
           }
           // Decrease press turn
           $player.pressTurns = Math.max($player.pressTurns - 1, 0);
         } else {
-          $battleLog = [...$battleLog, { type: 'player-action', message: `tried casting ${skill.name}...but ${currentEnemy.name} is already afflicted with ${skill.ailment}!` }];
           // Whoops, guess you wasted your turn...
+          $battleLog = [...$battleLog, { type: 'player-action', message: `tried casting ${skill.name}...but ${currentEnemy.name} is already afflicted with ${skill.ailment}!` }];
           $player.pressTurns = Math.max($player.pressTurns - 1, 0);
         }
       } else {
+        // do some Damage to the enemy
         const { damage, isCrit, damageRange, resistanceMultiplier, critMultiplier, skillPower, baseDamage, finalDamage } = calculateDamage($player, currentEnemy, skill, true);
 
+        /*$battleLog = [...$battleLog, { type: 'calculation', message: `Skill Calculation:
+          Attacker: ${$player.name}
+          Defender: ${currentEnemy.name}
+          Skill: ${skill.name}
+          Skill Type: ${skill.type}
+          Skill Power: ${skillPower}
+          Attacker Strength: ${$player.stats.strength}
+          Defender Vitality: ${currentEnemy.stats.vitality}
+          Base Damage: ${baseDamage}
+          Resistance Multiplier: ${resistanceMultiplier}
+          Critical Hit: ${isCrit ? 'Yes' : 'No'}
+          Critical Hit Multiplier: ${critMultiplier}
+          Final Damage: ${finalDamage}
+          Damage Range: [${damageRange[0]}, ${damageRange[1]}]
+          Damage: ${damage}` }];*/
+        
         if (resistanceMultiplier === -1) {
           // Absorption: Heal the enemy instead of dealing damage
           const healAmount = Math.abs(damage);
           currentEnemy.stats.hp = Math.min(currentEnemy.stats.hp + healAmount, currentEnemy.stats.maxHp); // update enemy HP display
           $player.pressTurns = Math.max($player.pressTurns - 1, 0); // Decrease press turn
-
-          /*$battleLog = [...$battleLog, { type: 'calculation', message: `Skill Calculation:
-            Attacker: ${$player.name}
-            Defender: ${currentEnemy.name}
-            Skill: ${skill.name}
-            Skill Type: ${skill.type}
-            Skill Power: ${skillPower}
-            Attacker Strength: ${$player.stats.strength}
-            Defender Vitality: ${currentEnemy.stats.vitality}
-            Base Damage: ${baseDamage}
-            Resistance Multiplier: ${resistanceMultiplier}
-            Critical Hit: ${isCrit ? 'Yes' : 'No'}
-            Critical Hit Multiplier: ${critMultiplier}
-            Final Damage: ${finalDamage}
-            Damage Range: [${damageRange[0]}, ${damageRange[1]}]
-            Damage: ${damage}` }];*/
 
           $battleLog = [...$battleLog, { type: 'player-action', message: `used ${skill.name} and healed ${healAmount} HP to ${currentEnemy.name}!` }];
         } else {
@@ -169,9 +175,9 @@
           let logMessage = `used ${skill.name} and dealt ${damage} damage! (Attack Range: ${damageRange[0]}-${damageRange[1]})`;
           if (isCrit) {
             logMessage += ' (Critical Hit! +1 Press Turn)';
-            $player.pressTurns = Math.min($player.pressTurns, PRESS_TURN_MAX); // Ensure press turns don't exceed 3 on critical hit
+            $player.pressTurns = Math.min($player.pressTurns, PRESS_TURN_MAX); // don't exceed max turns
           } else {
-            $player.pressTurns = Math.max($player.pressTurns - 1, 0); // Decrease press turns on non-critical hit
+            $player.pressTurns = Math.max($player.pressTurns - 1, 0); // no crit, decrease press turn
           }
           $battleLog = [...$battleLog, { type: 'player-action', message: logMessage }];
         }
@@ -230,12 +236,16 @@
         const skill = currentEnemy.skills[Math.floor(Math.random() * currentEnemy.skills.length)];
 
         if (skill.type === "ailment") {
+          // do some Ailment stuff to the player
           if (!$player.ailments || !$player.ailments[skill.ailment]) {
+            // player isn't afflicted yet, so..
             const isAilmentApplied = applyAilment(currentEnemy, $player, skill);
             if (isAilmentApplied) {
+              // successful cast
               $battleLog = [...$battleLog, { type: 'enemy-action', message: `tried casting ${skill.name} on ${$player.name}!` }];
               $battleLog = [...$battleLog, { type: 'status-effect', message: `${$player.name} is afflicted with ${skill.ailment}!` }];
             } else {
+              // failed cast
               $battleLog = [...$battleLog, { type: 'enemy-action', message: `tried casting ${skill.name}...but it failed!` }];
             }
             // Decrease press turn
@@ -246,6 +256,7 @@
             currentEnemy.pressTurns = Math.max(currentEnemy.pressTurns - 1, 0);
           }
         } else {
+          // do some Damage to the player
           const { damage, isCrit, damageRange, resistanceMultiplier, critMultiplier, skillPower, baseDamage, finalDamage } = calculateDamage(currentEnemy, $player, skill, false);
 
           if (resistanceMultiplier === -1) {
@@ -274,9 +285,9 @@
             let logMessage = `used ${skill.name} and dealt ${damage} damage! (Attack Range: ${damageRange[0]}-${damageRange[1]})`;
             if (isCrit) {
               logMessage += ' (Critical Hit! +1 Press Turn)';
-              currentEnemy.pressTurns = Math.min(currentEnemy.pressTurns, PRESS_TURN_MAX); // Ensure press turns don't exceed 3 on critical hit
+              currentEnemy.pressTurns = Math.min(currentEnemy.pressTurns, PRESS_TURN_MAX); // don't exceed max turns
             } else {
-              currentEnemy.pressTurns = Math.max(currentEnemy.pressTurns - 1, 0); // Decrease press turns on non-critical hit
+              currentEnemy.pressTurns = Math.max(currentEnemy.pressTurns - 1, 0); // no crit, decrease press turn
             }
             $battleLog = [...$battleLog, { type: 'enemy-action', message: logMessage }];
           }
@@ -302,7 +313,8 @@
 
     // onward
     $battleLog = [...$battleLog, { type: 'system-message', message: `--- NEXT TURN ---` }];
-    // who ran out of press turns?
+
+    // who ran out of press turns / what to do next?
     if (currentEnemy.pressTurns > 0) {
       enemyTurn();
     } else {
@@ -340,14 +352,19 @@
   }*/
 </script>
 
-<main> <button class="toggle-mode" on:click={toggleActive}>Toggle Battle Mode</button> <div class="battle-wrap"> {#if currentEnemy} <div class="battle-container" class:active={isActive}> <CharacterInfo character={currentEnemy} type="enemy" /> <CharacterInfo character={$player} type="player" />
+<main>
+  <button class="toggle-mode" on:click={toggleActive}>Toggle Battle Mode</button>
+  <div class="battle-wrap">
+  {#if currentEnemy}
+    <div class="battle-container" class:active={isActive}>
+      <CharacterInfo character={currentEnemy} type="enemy" />
+      <CharacterInfo character={$player} type="player" />
       <BattleLog player={$player} currentEnemy={currentEnemy} />
 
       <div class="player-actions">
         <button class="basic-attack" on:click={() => basicAttack($player, currentEnemy)} disabled={!isPlayerTurn}>
           Basic Attack
         </button><br/><br/>
-
         {#each $player.skills as skill}
           <button class="skill-button"
                class:healing={skill.type === 'healing'}
@@ -363,8 +380,8 @@
             {skill.name} <small>({skill.cost} MP)</small>
           </button>
         {/each}
-
-        <br/><br/><button class="end-turn" on:click={endTurn} disabled={!isPlayerTurn}>End Turn</button>
+        <br/><br/>
+        <button class="end-turn" on:click={endTurn} disabled={!isPlayerTurn}>End Turn</button>
       </div>
 
     </div>
@@ -450,7 +467,6 @@
     cursor: not-allowed !important;
   }
 
-
   .skill-button {
     padding: 15px 20px 35px;
     margin: 5px 5px;
@@ -473,32 +489,25 @@
   .skill-button.healing {
     background-color: #008080;
   }
-
   .skill-button.ailment {
     background-color: #524774;
   }
-
   .skill-button.fire {
     background-color: #d53515;
   }
-
   .skill-button.electric {
     background-color: #dfbd08;
   }
-
   .skill-button.ice {
     background-color: #59b2cf;
   }
-
   .skill-button.force {
     background-color: #228b22;
   }
-
   .skill-button.light {
     background-color: #fffff0;
     color: #000000;
   }
-
   .skill-button.dark {
     background-color: #8b0000;
   }
