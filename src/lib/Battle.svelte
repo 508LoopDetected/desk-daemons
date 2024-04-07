@@ -25,7 +25,7 @@
   export let enemyModels = [];
   export let objectModels = [];
 
-  let container;
+  let sceneContainer;
   let camera, scene, renderer, controls, effect, clock;
   let cameraPosition = '';
   let cameraTarget = '';
@@ -77,7 +77,7 @@
   // create the scene
   function init() {
     clock = new THREE.Clock();
-    camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 5000);
+    camera = new THREE.PerspectiveCamera(75, sceneContainer.clientWidth / sceneContainer.clientHeight, 0.1, 5000);
     camera.position.set(0, 200, 500);
 
     scene = new THREE.Scene();
@@ -92,9 +92,9 @@
     scene.add(directionalLight);
 
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setSize(sceneContainer.clientWidth, sceneContainer.clientHeight);
     renderer.shadowMap.enabled = true;
-    container.appendChild(renderer.domElement);
+    sceneContainer.appendChild(renderer.domElement);
 
     effect = new OutlineEffect(renderer, {
       defaultThickness: 0.008,
@@ -139,9 +139,9 @@
 
   // 
   function onWindowResize() {
-    camera.aspect = container.clientWidth / container.clientHeight;
+    camera.aspect = sceneContainer.clientWidth / sceneContainer.clientHeight;
     camera.updateProjectionMatrix();
-    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setSize(sceneContainer.clientWidth, sceneContainer.clientHeight);
   }
 
 
@@ -249,6 +249,7 @@
           // Trigger particles on the character model
           let statusEffect = particleStatusEffect($player, 0x00ff00, 'plus.png', 2);
           scene.add(statusEffect);
+          setAction($player.path, 'SittingVictory');
 
           setTimeout(() => {
             moveCamera('defaultView');
@@ -265,7 +266,12 @@
             $battleLog = [...$battleLog, { type: 'status-effect', message: `${currentEnemy.name} is afflicted with ${skill.ailment}!` }];
 
             // Trigger particles on the character model
-            let statusEffect = particleStatusEffect(currentEnemy, 0xA70BD8, 'skull.gif', 1);
+            let statusEffect;
+            if (skill.ailment == 'sleep') {
+              statusEffect = particleStatusEffect(currentEnemy, 0x05bff7, 'zzz.png', 2);
+            } else if (skill.ailment == 'poison') {
+              statusEffect = particleStatusEffect(currentEnemy, 0xA70BD8, 'skull.gif', 1);
+            }
             scene.add(statusEffect);
           } else {
             // failed cast
@@ -371,6 +377,8 @@
       if (currentEnemy.ailments && currentEnemy.ailments.sleep) {
         // is asleep, decrease press turn
         currentEnemy.pressTurns = Math.max(currentEnemy.pressTurns - 1, 0);
+        let statusEffect = particleStatusEffect(currentEnemy, 0x05bff7, 'zzz.png', 2);
+        scene.add(statusEffect);
       } else {
         // not asleep
 
@@ -391,6 +399,8 @@
             }
             // Decrease press turn
             currentEnemy.pressTurns = Math.max(currentEnemy.pressTurns - 1, 0);
+            let statusEffect = particleStatusEffect(currentEnemy, 0xA70BD8, 'skull.gif', 1);
+            scene.add(statusEffect);
           } else {
             // Whoops, guess they wasted their turn...
             $battleLog = [...$battleLog, { type: 'enemy-action', message: `tried casting ${skill.name}...but ${$player.name} is already afflicted with ${skill.ailment}!` }];
@@ -608,7 +618,7 @@
 
     return particleSystem;
   }
-  
+
   function particleSkillEffect(player, enemy, color, scaleFactor = 1) {
     const boltCount = 5;
     const boltDuration = 500;
@@ -645,52 +655,52 @@
     }
   }
 
-function createLightningBolt(start, end, color, scaleFactor) {
-  const segmentCount = 10;
-  const segmentLength = start.distanceTo(end) / segmentCount;
-  const positionVariation = segmentLength * 0.2 * scaleFactor;
+  function createLightningBolt(start, end, color, scaleFactor) {
+    const segmentCount = 10;
+    const segmentLength = start.distanceTo(end) / segmentCount;
+    const positionVariation = segmentLength * 0.2 * scaleFactor;
 
-  const geometry = new THREE.BufferGeometry();
-  const positions = [];
-  const colors = [];
+    const geometry = new THREE.BufferGeometry();
+    const positions = [];
+    const colors = [];
 
-  let currentPosition = start.clone();
-  for (let i = 0; i < segmentCount; i++) {
-    positions.push(currentPosition.x, currentPosition.y, currentPosition.z);
+    let currentPosition = start.clone();
+    for (let i = 0; i < segmentCount; i++) {
+      positions.push(currentPosition.x, currentPosition.y, currentPosition.z);
+      colors.push(color.r, color.g, color.b);
+
+      if (i < segmentCount - 1) {
+        const nextPosition = new THREE.Vector3().lerpVectors(currentPosition, end, 1 / (segmentCount - i));
+        nextPosition.x += (Math.random() - 0.5) * positionVariation;
+        nextPosition.y += (Math.random() - 0.5) * positionVariation;
+        nextPosition.z += (Math.random() - 0.5) * positionVariation;
+        currentPosition = nextPosition;
+      }
+    }
+
+    positions.push(end.x, end.y, end.z);
     colors.push(color.r, color.g, color.b);
 
-    if (i < segmentCount - 1) {
-      const nextPosition = new THREE.Vector3().lerpVectors(currentPosition, end, 1 / (segmentCount - i));
-      nextPosition.x += (Math.random() - 0.5) * positionVariation;
-      nextPosition.y += (Math.random() - 0.5) * positionVariation;
-      nextPosition.z += (Math.random() - 0.5) * positionVariation;
-      currentPosition = nextPosition;
-    }
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+
+    const material = new THREE.LineBasicMaterial({
+      vertexColors: true,
+      linewidth: 2 * scaleFactor,
+      opacity: 1,
+      transparent: true,
+    });
+
+    const line = new THREE.Line(geometry, material);
+    console.log('Line object:', line); // Add this line for debugging
+
+    return line;
   }
-
-  positions.push(end.x, end.y, end.z);
-  colors.push(color.r, color.g, color.b);
-
-  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-  geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-
-  const material = new THREE.LineBasicMaterial({
-    vertexColors: true,
-    linewidth: 2 * scaleFactor,
-    opacity: 1,
-    transparent: true,
-  });
-
-  const line = new THREE.Line(geometry, material);
-  console.log('Line object:', line); // Add this line for debugging
-
-  return line;
-}
 </script>
 
 <main class:active={isActive}>
 
-  <div bind:this={container} class="webgl-container">
+  <div bind:this={sceneContainer} class="webgl-container">
     <div class="background"></div>
     
     {#if $player && playerModel}
@@ -847,7 +857,7 @@ function createLightningBolt(start, end, color, scaleFactor) {
   }
 
   #playerHUD {
-    top: 2vh;
+    bottom: 2vh;
     width: 94vw;
     left: 2vw;
     display: grid;
@@ -863,13 +873,13 @@ function createLightningBolt(start, end, color, scaleFactor) {
   }
 
   #enemyStats {
-    bottom: 50%;
+    top: 30%;
     right: 2%;
   }
 
   #battleLog {
-    bottom: 4%;
-    right: 2%;
+    top: 4%;
+    left: 2%;
   }
 
   .header {
@@ -896,12 +906,14 @@ function createLightningBolt(start, end, color, scaleFactor) {
     padding: 10px 15px;
     background-color: #555;
     color: #fff;
-    border: none;
     cursor: pointer;
     font-weight: bold;
     font-size: 1rem;
     transition: background-color 0.3s ease;
     position: relative;
+    text-shadow: 0 0 5px #000;
+    border: 2px solid rgba(255,255,255,0.3);
+    outline: 3px solid #000;
   }
 
   button:disabled {
@@ -913,7 +925,6 @@ function createLightningBolt(start, end, color, scaleFactor) {
   .skill-button {
     margin: 10px;
     color: #fff;
-    border: none;
     cursor: pointer;
     font-weight: bold;
     transition: background-color 0.3s ease;

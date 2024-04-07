@@ -19,8 +19,8 @@
   "stats": {
     "hp": 250,
     "maxHp": 250,
-    "mp": 300,
-    "maxMp": 300,
+    "mp": 70,
+    "maxMp": 70,
     "strength": 25,
     "vitality": 12,
     "magic": 15,
