@@ -1,32 +1,56 @@
 <script>
+  import { tweened } from 'svelte/motion';
+  import { cubicOut } from 'svelte/easing';
+
   export let character;
   export let type;
+
   let htmlContent;
-  $: if (type === 'player') {
-    htmlContent = '<img class="avatar" src="skull.gif">';
-  } else {
-    htmlContent = '<img class="avatar" src="zesty.gif">';
+
+  const hpBar = tweened(character.stats.hp, {
+    duration: 400,
+    easing: cubicOut
+  });
+
+  const mpBar = tweened(character.stats.mp, {
+    duration: 400,
+    easing: cubicOut
+  });
+
+  $: {
+    hpBar.set(character.stats.hp);
+    mpBar.set(character.stats.mp);
   }
 </script>
 
-<div class={`${type}-info`}>
-  <h3>
-    <span class={`${type}-sprite`}>
-      {@html htmlContent}
-    </span> {character.name}
-  </h3>
+<div class="info-wrap">
+  <div class={`${type}-info`}>
+    <h3>{character.name}
+    </h3>
+  </div>
+
   <div class={`${type}-stats`}>
-    <p><strong>HP:</strong> {character.stats.hp} | <strong>MP:</strong> {character.stats.mp}</p>
-    <p>Level: {character.level}, Strength: {character.stats.strength}, Vitality: {character.stats.vitality}, Magic: {character.stats.magic}, Agility: {character.stats.agility}, Luck: {character.stats.luck}</p>
-    <p class="resistances"><strong>Physical:</strong> {character.resistances.physical}<br/>
-      <strong>Fire:</strong> {character.resistances.fire}<br/>
-      <strong>Electric:</strong> {character.resistances.electric}<br/>
-      <strong>Ice:</strong> {character.resistances.ice}<br/>
-      <strong>Force:</strong> {character.resistances.force}<br/>
-      <strong>Light:</strong> {character.resistances.light}<br/>
-      <strong>Dark:</strong> {character.resistances.dark}</p>
+    <div class="stat-bars">
+      <div class="bar-wrapper">
+        <div class="bar hp-bar" style="width: {($hpBar / character.stats.maxHp) * 100}%;"></div>
+        <span class="bar-label">HP: {character.stats.hp}/{character.stats.maxHp}</span>
+      </div>
+      <div class="bar-wrapper">
+        <div class="bar mp-bar" style="width: {($mpBar / character.stats.maxMp) * 100}%;"></div>
+        <span class="bar-label">MP: {character.stats.mp}/{character.stats.maxMp}</span>
+      </div>
+    </div>
   </div>
 </div>
+
+<!-- <p>Level: {character.level}, Strength: {character.stats.strength}, Vitality: {character.stats.vitality}, Magic: {character.stats.magic}, Agility: {character.stats.agility}, Luck: {character.stats.luck}</p>
+<p class="resistances"><strong>Physical:</strong> {character.resistances.physical}<br/>
+  <strong>Fire:</strong> {character.resistances.fire}<br/>
+  <strong>Electric:</strong> {character.resistances.electric}<br/>
+  <strong>Ice:</strong> {character.resistances.ice}<br/>
+  <strong>Force:</strong> {character.resistances.force}<br/>
+  <strong>Light:</strong> {character.resistances.light}<br/>
+  <strong>Dark:</strong> {character.resistances.dark}</p> -->
 
 <style>
   :global(.avatar) {
@@ -48,18 +72,60 @@
 
   .enemy-info,
   .player-info {
-    text-align: center;
     font-size: 1.2rem;
+    text-transform: uppercase;
+    color: #fff;
+    letter-spacing: 2px;
   }
 
-  .enemy-sprite,
-  .player-sprite {
-    font-size: 42px;
-    margin-bottom: 10px;
+  .info-wrap {
+    display: grid;
+    grid-template-columns: 30% 70%;
+    grid-template-rows: 1fr;
+    gap: 0px 0px;
+    grid-auto-flow: row;
   }
 
-  .enemy-stats,
-  .player-stats {
-    text-align: center;
+  .stat-bars {
+    margin-top: 10px;
+  }
+
+  .bar-wrapper {
+    position: relative;
+    width: 100%;
+    height: 30px;
+    background-color: #000;
+    overflow: hidden;
+    margin-bottom: 5px;
+  }
+
+  .bar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    transition: width 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .hp-bar {
+    background-color: #4caf50;
+  }
+
+  .mp-bar {
+    background-color: #2196f3;
+  }
+
+  .bar-label {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
   }
 </style>

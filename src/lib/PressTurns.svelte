@@ -25,6 +25,7 @@
     justify-content: space-around;
     align-items: center;
     background-color: #000;
+    color: #fff;
   }
 
   .player-turns,

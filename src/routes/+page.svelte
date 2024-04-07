@@ -4,7 +4,11 @@
 </script>
 
 <main>
-  <Battle />
+  <Battle
+    playerModel="player"
+    enemyModels={['female_secretary']}
+    objectModels={['PC']}
+  />
 </main>
 
 <style type="text/css">

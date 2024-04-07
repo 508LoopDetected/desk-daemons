@@ -1,0 +1,495 @@
+[
+  {
+    "name": "Oni",
+    "path": "female_secretary",
+    "model": "female_secretary.fbx",
+    "mesh": "female_secretary.png",
+    "position": { "x": 0, "y": -1600, "z": 1500 },
+    "rotation": { "x": -0.2, "y": -135, "z": 0 },
+    "scale": { "x": 15, "y": 15, "z": 15 },
+    "animations": [
+      "CrazyGesture",
+      "RhumbaDancing",
+      "Insult",
+      "Idle"
+    ],
+    "defaultAnimation": "Idle",
+    "level": 16,
+    "stats": {
+      "hp": 270,
+      "maxHp": 270,
+      "mp": 64,
+      "strength": 25,
+      "vitality": 22,
+      "magic": 14,
+      "agility": 19,
+      "luck": 17
+    },
+    "resistances": {
+      "physical": "resist",
+      "fire": "normal",
+      "ice": "normal",
+      "electric": "normal",
+      "force": "weak",
+      "light": "normal",
+      "dark": "normal"
+    },
+    "skills": [
+      {
+        "name": "Blight",
+        "type": "ailment",
+        "cost": 8,
+        "power": 0,
+        "ailment": "poison",
+        "ailmentChance": 0.8
+      },
+      {
+        "name": "Fang Breaker",
+        "type": "physical",
+        "cost": 9,
+        "power": 35
+      }
+    ],
+    "ailments": {
+      "poison": 0,
+      "confusion": 0,
+      "sleep": 0
+    },
+    "exp": 320,
+    "loot": [
+      {
+        "name": "Brute Rock",
+        "dropRate": 0.25
+      }
+    ]
+  },
+  {
+    "name": "Pixie",
+    "path": "female_secretary",
+    "model": "female_secretary.fbx",
+    "mesh": "female_secretary.png",
+    "position": { "x": 0, "y": -400, "z": 1250 },
+    "rotation": { "x": -0.3, "y": -135, "z": 0 },
+    "scale": { "x": 9, "y": 9, "z": 9 },
+    "animations": [
+      "CrazyGesture",
+      "RhumbaDancing",
+      "Insult",
+      "Idle"
+    ],
+    "defaultAnimation": "Idle",
+    "level": 2,
+    "stats": {
+      "hp": 80,
+      "maxHp": 80,
+      "mp": 20,
+      "strength": 1,
+      "vitality": 4,
+      "magic": 8,
+      "agility": 10,
+      "luck": 7
+    },
+    "resistances": {
+      "physical": "normal",
+      "fire": "null",
+      "ice": "absorb",
+      "electric": "weak",
+      "force": "resist",
+      "light": "normal",
+      "dark": "normal"
+    },
+    "skills": [
+      {
+        "name": "Zio",
+        "type": "electric",
+        "cost": 4,
+        "power": 3
+      },
+      {
+        "name": "Toxic Cloud",
+        "type": "ailment",
+        "cost": 8,
+        "power": 0,
+        "ailment": "poison",
+        "ailmentChance": 1
+      }
+    ],
+    "ailments": {
+      "poison": 0,
+      "confusion": 0,
+      "sleep": 0
+    },
+    "exp": 10,
+    "loot": [
+      {
+        "name": "Pixie Wing",
+        "dropRate": 0.5
+      }
+    ]
+  },
+  {
+    "name": "Kodama",
+    "path": "starman",
+    "model": "starman.fbx",
+    "mesh": null,
+    "position": { "x": 0, "y": 0, "z": 0 },
+    "rotation": { "x": 0, "y": 0, "z": 0 },
+    "scale": { "x": 50, "y": 50, "z": 50 },
+    "animations": [
+      "Typing",
+      "SittingAndPointing",
+      "SittingVictory",
+      "SitToStand",
+      "MaleSittingPose"
+    ],
+    "defaultAnimation": "Typing",
+    "level": 3,
+    "stats": {
+      "hp": 60,
+      "maxHp": 60,
+      "mp": 15,
+      "strength": 1,
+      "vitality": 6,
+      "magic": 5,
+      "agility": 8,
+      "luck": 6
+    },
+    "resistances": {
+      "physical": "normal",
+      "fire": "weak",
+      "ice": "normal",
+      "electric": "normal",
+      "force": "resist",
+      "light": "normal",
+      "dark": "normal"
+    },
+    "skills": [
+      {
+        "name": "Zan",
+        "type": "force",
+        "cost": 5,
+        "power": 3
+      }
+    ],
+    "ailments": {
+      "poison": 0,
+      "confusion": 0,
+      "sleep": 0
+    },
+    "exp": 15,
+    "loot": [
+      {
+        "name": "Life Herb",
+        "dropRate": 0.3
+      }
+    ]
+  },
+  {
+    "name": "Jack Frost",
+    "path": "starman",
+    "model": "starman.fbx",
+    "mesh": null,
+    "position": { "x": 0, "y": 0, "z": 0 },
+    "rotation": { "x": 0, "y": 0, "z": 0 },
+    "scale": { "x": 50, "y": 50, "z": 50 },
+    "animations": [
+      "Typing",
+      "SittingAndPointing",
+      "SittingVictory",
+      "SitToStand",
+      "MaleSittingPose"
+    ],
+    "defaultAnimation": "Typing",
+    "level": 4,
+    "stats": {
+      "hp": 100,
+      "maxHp": 100,
+      "mp": 25,
+      "strength": 6,
+      "vitality": 7,
+      "magic": 9,
+      "agility": 7,
+      "luck": 8
+    },
+    "resistances": {
+      "physical": "normal",
+      "fire": "weak",
+      "ice": "absorb",
+      "electric": "normal",
+      "force": "normal",
+      "light": "normal",
+      "dark": "normal"
+    },
+    "skills": [
+      {
+        "name": "Bufu",
+        "type": "ice",
+        "cost": 5,
+        "power": 10
+      }
+    ],
+    "ailments": {
+      "poison": 0,
+      "confusion": 0,
+      "sleep": 0
+    },
+    "exp": 20,
+    "loot": [
+      {
+        "name": "Ice Gem",
+        "dropRate": 0.2
+      }
+    ]
+  },
+    {
+    "name": "Forneus",
+    "path": "female_secretary",
+    "model": "female_secretary.fbx",
+    "mesh": "female_secretary.png",
+    "position": { "x": 0, "y": -400, "z": 1250 },
+    "rotation": { "x": -0.3, "y": -135, "z": 0 },
+    "scale": { "x": 9, "y": 9, "z": 9 },
+    "animations": [
+      "CrazyGesture",
+      "RhumbaDancing",
+      "Insult",
+      "Idle"
+    ],
+    "defaultAnimation": "Idle",
+    "level": 11,
+    "stats": {
+      "hp": 154,
+      "maxHp": 154,
+      "mp": 67,
+      "strength": 12,
+      "vitality": 12,
+      "magic": 15,
+      "agility": 13,
+      "luck": 12
+    },
+    "resistances": {
+      "physical": "normal",
+      "fire": "normal",
+      "ice": "normal",
+      "electric": "weak",
+      "force": "resist",
+      "light": "normal",
+      "dark": "normal"
+    },
+    "skills": [
+      {
+        "name": "Zan",
+        "type": "force",
+        "cost": 5,
+        "power": 15
+      },
+      {
+        "name": "Pulinpa",
+        "type": "ailment",
+        "cost": 5,
+        "power": 0,
+        "ailment": "confusion",
+        "ailmentChance": 0.6
+      }
+    ],
+    "ailments": {
+      "poison": 0,
+      "confusion": 0,
+      "sleep": 0
+    },
+    "exp": 172,
+    "loot": [
+      {
+        "name": "Life Stone",
+        "dropRate": 0.2
+      }
+    ]
+  },
+  {
+    "name": "Lilim",
+    "path": "female_secretary",
+    "model": "female_secretary.fbx",
+    "mesh": "female_secretary.png",
+    "position": { "x": 0, "y": -400, "z": 1250 },
+    "rotation": { "x": -0.3, "y": -135, "z": 0 },
+    "scale": { "x": 9, "y": 9, "z": 9 },
+    "animations": [
+      "CrazyGesture",
+      "RhumbaDancing",
+      "Insult",
+      "Idle"
+    ],
+    "defaultAnimation": "Idle",
+    "level": 20,
+    "stats": {
+      "hp": 220,
+      "maxHp": 220,
+      "mp": 121,
+      "strength": 22,
+      "vitality": 19,
+      "magic": 24,
+      "agility": 21,
+      "luck": 19
+    },
+    "resistances": {
+      "physical": "resist",
+      "fire": "normal",
+      "ice": "normal",
+      "electric": "weak",
+      "force": "normal",
+      "light": "weak",
+      "dark": "resist"
+    },
+    "skills": [
+      {
+        "name": "Mazio",
+        "type": "electric",
+        "cost": 8,
+        "power": 25
+      },
+      {
+        "name": "Charm",
+        "type": "ailment",
+        "cost": 10,
+        "power": 0,
+        "ailment": "charm",
+        "ailmentChance": 0.5
+      }
+    ],
+    "ailments": {
+      "poison": 0,
+      "confusion": 0,
+      "sleep": 0,
+      "charm": 0
+    },
+    "exp": 440,
+    "loot": [
+      {
+        "name": "Bead",
+        "dropRate": 0.3
+      }
+    ]
+  },
+  {
+    "name": "Nozuchi",
+    "path": "female_secretary",
+    "model": "female_secretary.fbx",
+    "mesh": "female_secretary.png",
+    "position": { "x": 0, "y": -400, "z": 1250 },
+    "rotation": { "x": -0.3, "y": -135, "z": 0 },
+    "scale": { "x": 9, "y": 9, "z": 9 },
+    "animations": [
+      "CrazyGesture",
+      "RhumbaDancing",
+      "Insult",
+      "Idle"
+    ],
+    "defaultAnimation": "Idle",
+    "level": 7,
+    "stats": {
+      "hp": 105,
+      "maxHp": 105,
+      "mp": 38,
+      "strength": 10,
+      "vitality": 8,
+      "magic": 7,
+      "agility": 12,
+      "luck": 8
+    },
+    "resistances": {
+      "physical": "normal",
+      "fire": "normal",
+      "ice": "weak",
+      "electric": "normal",
+      "force": "resist",
+      "light": "normal",
+      "dark": "normal"
+    },
+    "skills": [
+      {
+        "name": "Toxic Sting",
+        "type": "ailment",
+        "cost": 5,
+        "power": 0,
+        "ailment": "poison",
+        "ailmentChance": 0.7
+      }
+    ],
+    "ailments": {
+      "poison": 0,
+      "confusion": 0,
+      "sleep": 0
+    },
+    "exp": 56,
+    "loot": [
+      {
+        "name": "Poison Sac",
+        "dropRate": 0.4
+      }
+    ]
+  },
+  {
+    "name": "Bicorn",
+    "path": "female_secretary",
+    "model": "female_secretary.fbx",
+    "mesh": "female_secretary.png",
+    "position": { "x": 0, "y": -400, "z": 1250 },
+    "rotation": { "x": -0.3, "y": -135, "z": 0 },
+    "scale": { "x": 9, "y": 9, "z": 9 },
+    "animations": [
+      "CrazyGesture",
+      "RhumbaDancing",
+      "Insult",
+      "Idle"
+    ],
+    "defaultAnimation": "Idle",
+    "level": 9,
+    "stats": {
+      "hp": 135,
+      "maxHp": 135,
+      "mp": 45,
+      "strength": 15,
+      "vitality": 11,
+      "magic": 9,
+      "agility": 14,
+      "luck": 10
+    },
+    "resistances": {
+      "physical": "normal",
+      "fire": "normal",
+      "ice": "normal",
+      "electric": "normal",
+      "force": "normal",
+      "light": "weak",
+      "dark": "resist"
+    },
+    "skills": [
+      {
+        "name": "Oni-Kagura",
+        "type": "physical",
+        "cost": 6,
+        "power": 20
+      },
+      {
+        "name": "Pulinpa",
+        "type": "ailment",
+        "cost": 5,
+        "power": 0,
+        "ailment": "confusion",
+        "ailmentChance": 0.6
+      }
+    ],
+    "ailments": {
+      "poison": 0,
+      "confusion": 0,
+      "sleep": 0
+    },
+    "exp": 81,
+    "loot": [
+      {
+        "name": "Dis-Poison",
+        "dropRate": 0.35
+      }
+    ]
+  }
+]

@@ -1,11 +1,26 @@
 {
   "name": "Hobbes",
+  "path": "player",
+  "model": "vector_man.fbx",
+  "mesh": "vector_man.png",
+  "position": { "x": 0, "y": 0, "z": 0 },
+  "rotation": { "x": 0, "y": 0, "z": 0 },
+  "scale": { "x": 1, "y": 1, "z": 1 },
+  "animations": [
+    "Typing",
+    "SittingAndPointing",
+    "SittingVictory",
+    "SitToStand",
+    "MaleSittingPose"
+  ],
+  "defaultAnimation": "Typing",
   "level": 20,
   "experience": 0,
   "stats": {
     "hp": 250,
     "maxHp": 250,
     "mp": 300,
+    "maxMp": 300,
     "strength": 25,
     "vitality": 12,
     "magic": 15,

@@ -7,8 +7,9 @@
 </script>
 
 
+<PressTurns player={$player} currentEnemy={currentEnemy} />
+
 <div class="battle-log">
-      <PressTurns player={$player} currentEnemy={currentEnemy} />
   {#each reversedBattleLog as logEntry}
     <p class={logEntry.type}>
       {#if logEntry.type === 'player-action'}
@@ -34,10 +35,23 @@
     flex-direction: column-reverse;
     padding: 10px;
     background-color: #111;
-    max-height: 60vh;
+    height: 250px;
     font-family: 'Courier New', monospace;
     font-size: 1rem;
     overflow-y: scroll;
+    position: relative;
+  }
+
+  .battle-log:after {
+    width: 100%;
+    height: 70%;
+    content: '';
+    top: 0;
+    left: 0;
+    z-index: 2;
+    display: block;
+    position: absolute;
+    background: linear-gradient(rgba(0,0,0,1),rgba(0,0,0,0));
   }
 
   :global(.battle-log p.player-action) {
