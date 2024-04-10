@@ -7,8 +7,11 @@ A self-imposed challenge to use SvelteKit and Three.js to build a 3D turn-based 
 - Megaten-like skill set & resistances
 - Nocturne-inspired "Press Turn" system
 - Demo character models & basic animations, extra janky for yuks
+- Basic interface
 
 Currently, a full battle can be played out with a single enemy (hint: weak to Zan). There's maybe a little cursor-based maze game somewhere in here too.
 
 ### To Do:
 - Reorganize Battle component into separate files
+- Enemy & skill API
+- A proper GUI
