@@ -7,6 +7,7 @@
 	import {
 		player,
 		enemies,
+		currentEnemy,
 		battleLog
 	} from './stores.js';
 	import {
@@ -54,14 +55,15 @@
 		playerFocus: { x: -19.46, y: 132.50, z: -91.13 },
 	};
 
-	let currentEnemy = $enemies[Math.floor(Math.random() * $enemies.length)];
+	let currentEnemyData = $enemies[Math.floor(Math.random() * $enemies.length)];
+	currentEnemy.set(currentEnemyData);
 	let isPlayerTurn = true; // player starts first
 	let disableGUI = false; // helper for animations
 
 	// set press turns
 	$player = { ...$player, pressTurns: PRESS_TURN_MAX };
-	currentEnemy.pressTurns = PRESS_TURN_MAX;
-	$battleLog = [...$battleLog, { type: 'system-message', message: `A wild ${currentEnemy.name} appeared!` }];
+	$currentEnemy.pressTurns = PRESS_TURN_MAX;
+	$battleLog = [...$battleLog, { type: 'system-message', message: `A wild ${$currentEnemy.name} appeared!` }];
 
 	// DOOT DOOT
 	onMount(() => {
@@ -170,21 +172,16 @@
 
 		// is it the player or enemy's turn?
 		const isPlayerAttacker = attacker === $player;
-		const attackerName = isPlayerAttacker ? $player.name : currentEnemy.name;
-		const defenderName = !isPlayerAttacker ? $player.name : currentEnemy.name;
+		const attackerName = isPlayerAttacker ? $player.name : $currentEnemy.name;
+		const defenderName = !isPlayerAttacker ? $player.name : $currentEnemy.name;
 		
 		// PHYSICAL skill used
-		if (action === 'basicAttack') {
-			const skill = {
-				name: 'Basic Attack',
-				type: 'physical',
-				power: 10
-			};
+		if (action.type === 'physical') {
 			const {
 				damage,
 				isCrit,
 				resistanceMultiplier
-			} = calculateDamage(attacker, defender, skill, isPlayerAttacker);
+			} = calculateDamage(attacker, defender, action, isPlayerAttacker);
 			if (resistanceMultiplier === -1) {
 				// whoops, attack was absorbed
 				const healAmount = Math.abs(damage);
@@ -208,7 +205,7 @@
 			if (isPlayerAttacker) {
 				$player.pressTurns = isCrit ? Math.min($player.pressTurns, PRESS_TURN_MAX) : Math.max($player.pressTurns - 1, 0);
 			} else {
-				currentEnemy.pressTurns = isCrit ? Math.min(currentEnemy.pressTurns, PRESS_TURN_MAX) : Math.max(currentEnemy.pressTurns - 1, 0);
+				$currentEnemy.pressTurns = isCrit ? Math.min($currentEnemy.pressTurns, PRESS_TURN_MAX) : Math.max($currentEnemy.pressTurns - 1, 0);
 			}
 
 		// MP-based skill used
@@ -222,28 +219,27 @@
 			// SUPPORT skill used
 			if (action.type === 'healing') {
 				attacker.stats.mp -= action.cost;
+				// calculate based on which healing skill
+				const healAmount = calculateHeal(attacker, action);
+				// heal no more than caster's max HP
+				attacker.stats.hp = Math.min(attacker.stats.hp + healAmount, attacker.stats.maxHp);
+				$battleLog = [...$battleLog, {
+					type: 'player-action',
+					message: `used ${action.name} and healed ${healAmount} HP!`
+				}];
+				// visual effects
 				moveCamera('playerFocus', () => {
-					// calculate based on which healing skill
-					const healAmount = calculateHeal(attacker, action);
-					// heal no more than caster's max HP
-					attacker.stats.hp = Math.min(attacker.stats.hp + healAmount, attacker.stats.maxHp);
-					$battleLog = [...$battleLog, {
-						type: 'player-action',
-						message: `used ${action.name} and healed ${healAmount} HP!`
-					}];
-					// visual effects
-					setAction(attacker.path, 'Victory');
+					setAction(attacker.path, 'Victory'); // character pose
 					const statusEffect = particleStatusEffect(attacker, 0x00ff00, 'plus.png', 2);
 					scene.add(statusEffect);
-					// reset camera
-					setTimeout(() => moveCamera('defaultView'), 1500);
+					setTimeout(() => moveCamera('defaultView'), 1500); // reset camera
 				});
 				
 				// action complete, spend a press turn
 				if (isPlayerAttacker) {
 					$player.pressTurns = Math.max($player.pressTurns - 1, 0);
 				} else {
-					currentEnemy.pressTurns = Math.max(currentEnemy.pressTurns - 1, 0);
+					$currentEnemy.pressTurns = Math.max($currentEnemy.pressTurns - 1, 0);
 				}
 
 			// AILMENT skill used
@@ -267,7 +263,7 @@
 							},
 							{
 								type: 'status-effect',
-								message: `${defenderName} is afflicted with ${action.ailment}!`
+								message: `${defenderName} has been afflicted with ${action.ailment}!`
 							}
 						];
 						// visual effects
@@ -290,7 +286,7 @@
 				if (isPlayerAttacker) {
 					$player.pressTurns = Math.max($player.pressTurns - 1, 0);
 				} else {
-					currentEnemy.pressTurns = Math.max(currentEnemy.pressTurns - 1, 0);
+					$currentEnemy.pressTurns = Math.max($currentEnemy.pressTurns - 1, 0);
 				}
 
 			// MAGIC skill used
@@ -327,7 +323,7 @@
 				if (isPlayerAttacker) {
 					$player.pressTurns = isCrit ? Math.min($player.pressTurns, PRESS_TURN_MAX) : Math.max($player.pressTurns - 1, 0);
 				} else {
-					currentEnemy.pressTurns = isCrit ? Math.min(currentEnemy.pressTurns, PRESS_TURN_MAX) : Math.max(currentEnemy.pressTurns - 1, 0);
+					$currentEnemy.pressTurns = isCrit ? Math.min($currentEnemy.pressTurns, PRESS_TURN_MAX) : Math.max($currentEnemy.pressTurns - 1, 0);
 				}
 			}
 		}
@@ -344,14 +340,14 @@
 			endTurn();
 		} else if (!isPlayerAttacker) {
 			setTimeout(() => {
-				if (currentEnemy.ailments && currentEnemy.ailments.sleep) {
-					currentEnemy.pressTurns = 0;
-					let statusEffect = particleStatusEffect(currentEnemy, 0x05bff7, 'zzz.png', 2);
+				if ($currentEnemy.ailments && $currentEnemy.ailments.sleep) {
+					$currentEnemy.pressTurns = 0;
+					let statusEffect = particleStatusEffect($currentEnemy, 0x05bff7, 'zzz.png', 2);
 					scene.add(statusEffect);
 					endTurn();
 				} else {
-					const skill = currentEnemy.skills[Math.floor(Math.random() * currentEnemy.skills.length)];
-					performAction(skill, currentEnemy, $player);
+					const skill = $currentEnemy.skills[Math.floor(Math.random() * $currentEnemy.skills.length)];
+					performAction(skill, $currentEnemy, $player);
 				}
 			}, 2000);
 		}
@@ -364,60 +360,66 @@
 
 		// check if player is asleep
 		if ($player.ailments && $player.ailments.sleep) {
-			$battleLog = [...$battleLog, {
-				type: 'status-effect',
-				message: `💤 ${$player.name} is asleep! 💤`
-			}];
+			setTimeout(() => { // let it breathe
+				$battleLog = [...$battleLog, {
+					type: 'status-effect',
+					message: `💤 ${$player.name} is asleep! 💤`
+				}];
+			}, 3000);
 			$player.pressTurns = 0; // set player's press turns to 0 if asleep
 		}
 
 		// who ran out of press turns / what to do next?
-		if (currentEnemy.pressTurns > 0) {
-	  		isPlayerTurn = false;
-			setTimeout(() => {
-				if (currentEnemy.ailments && currentEnemy.ailments.sleep) {
+		setTimeout(() => { // let it breathe
+			if ($currentEnemy.pressTurns > 0) {
+		  		isPlayerTurn = false;
+				$battleLog = [...$battleLog, {
+					type: 'system-message',
+					message: `--- ENEMY TURN! ---`
+				}];
+				setTimeout(() => { // let it breathe
+					if ($currentEnemy.ailments && $currentEnemy.ailments.sleep) {
+						$battleLog = [...$battleLog, {
+							type: 'status-effect',
+							message: `💤 ${$currentEnemy.name} is asleep! 💤`
+						}];
+						$currentEnemy.pressTurns = 0;
+						let statusEffect = particleStatusEffect($currentEnemy, 0x05bff7, 'zzz.png', 2);
+						scene.add(statusEffect);
+						endTurn();
+					} else {
+						const skill = $currentEnemy.skills[Math.floor(Math.random() * $currentEnemy.skills.length)];
+						performAction(skill, $currentEnemy, $player);
+					}
+				}, 3000);
+			} else {
+					//reset press turns
+					$player.pressTurns = PRESS_TURN_MAX;
+					$currentEnemy.pressTurns = PRESS_TURN_MAX;
+					isPlayerTurn = true;
+					// ...waiting for player to do something
 					$battleLog = [...$battleLog, {
-						type: 'status-effect',
-						message: `💤 ${currentEnemy.name} is asleep! 💤`
+						type: 'system-message',
+						message: `--- YOUR TURN! ---`
 					}];
-					currentEnemy.pressTurns = 0;
-					let statusEffect = particleStatusEffect(currentEnemy, 0x05bff7, 'zzz.png', 2);
-					scene.add(statusEffect);
-					endTurn();
-				} else {
-					const skill = currentEnemy.skills[Math.floor(Math.random() * currentEnemy.skills.length)];
-					performAction(skill, currentEnemy, $player);
-				}
-			}, 1000);
-		} else {
-			//reset press turns
-			$player.pressTurns = PRESS_TURN_MAX;
-			currentEnemy.pressTurns = PRESS_TURN_MAX;
-			isPlayerTurn = true;
-			// ...waiting for player to do something
-		}
-
-		// onward
-		/*$battleLog = [...$battleLog, {
-			type: 'system-message',
-			message: `--- NEXT TURN ---`
-		}];*/
+			}
+		}, 3000);
 	}
 
 
   function checkGameOver() {
 	if ($player.stats.hp <= 0) {
-		setAction(currentEnemy.path, 'Victory');
+		setAction($currentEnemy.path, 'Victory');
 		setAction($player.path, 'Defeat');
 	  $battleLog = [...$battleLog, { type: 'system-message', message: `${$player.name} has been defeated! Game Over.` }];
 	  isPlayerTurn = false;
 	  return true;
 	}
 	
-	if (currentEnemy.stats.hp <= 0) {
+	if ($currentEnemy.stats.hp <= 0) {
 		setAction($player.path, 'Victory');
-		setAction(currentEnemy.path, 'Defeat');
-	  $battleLog = [...$battleLog, { type: 'system-message', message: `${currentEnemy.name} has been defeated! You win!` }];
+		setAction($currentEnemy.path, 'Defeat');
+	  $battleLog = [...$battleLog, { type: 'system-message', message: `${$currentEnemy.name} has been defeated! You win!` }];
 	  isPlayerTurn = false;
 	  return true;
 	}
@@ -591,19 +593,17 @@
 
   <div class="battle-wrap">
 
-	{#if currentEnemy}
+	{#if $currentEnemy}
 	  <div id="enemyStats">
-		<CharacterInfo character={currentEnemy} type="enemy" />
+		<CharacterInfo character={$currentEnemy} type="enemy" />
 	  </div>
 	  <div id="playerHUD">
 		<CharacterInfo character={$player} type="player" />
 		
 		<div class="player-actions">
-		  <button class="basic-attack" on:click={() => performAction('basicAttack', $player, currentEnemy)} disabled={!isPlayerTurn || disableGUI}>
-		    Basic Attack
-		  </button>
 		  {#each $player.skills as skill}
 		    <button class="skill-button"
+		         class:physical={skill.type === 'physical'}
 		         class:healing={skill.type === 'healing'}
 		         class:ailment={skill.type === 'ailment'}
 		         class:fire={skill.type === 'fire'}
@@ -612,18 +612,17 @@
 		         class:force={skill.type === 'force'}
 		         class:light={skill.type === 'light'}
 		         class:dark={skill.type === 'dark'}
-		         on:click={() => performAction(skill, $player, currentEnemy)}
+		         on:click={() => performAction(skill, $player, $currentEnemy)}
 		         disabled={!isPlayerTurn || disableGUI}>
 		      {skill.name} <small>{skill.cost}</small>
 		    </button>
 		  {/each}
 		</div>
 	  </div>
+
+		<PressTurns player={$player} currentEnemy={$currentEnemy} isPlayerTurn={isPlayerTurn} />
 	  <div id="battleLog">
-
-
-		<PressTurns player={$player} currentEnemy={currentEnemy} isPlayerTurn={isPlayerTurn} />
-		<BattleLog player={$player} currentEnemy={currentEnemy} isPlayerTurn={isPlayerTurn} />
+		<BattleLog player={$player} currentEnemy={$currentEnemy} isPlayerTurn={isPlayerTurn} />
 	  </div>
 	{:else}
 	  <!-- nothing yet -->
@@ -698,8 +697,7 @@
   }
 
   #playerHUD,
-  #enemyStats,
-  #battleLog {
+  #enemyStats {
 	position: absolute;
 	background: rgba(30,30,30,0.8);
 	width: 500px;
@@ -722,12 +720,10 @@
   }
 
   #battleLog {
-	top: 2vh;
+	position: absolute;
+	top: 4vh;
 	width: 94vw;
 	left: 2vw;
-	display: grid;
-	grid-template-columns: 30% 70%;
-	grid-template-rows: 1fr;
   }
 
   .header {
@@ -793,6 +789,8 @@
 	padding-top: 4px;
   }
 
+  .skill-button.physical small { display: none; }
+
   .skill-button.healing {
 	background-color: #008080;
   }
@@ -822,7 +820,7 @@
 
 
 
-  #camerahud {
+/*  #camerahud {
 	position: absolute;
 	top: 0px;
 	left: 0; right: 0;
@@ -862,5 +860,5 @@
   }
   .hud-button:hover {
 	background-color: #666;
-  }
+  }*/
 </style>

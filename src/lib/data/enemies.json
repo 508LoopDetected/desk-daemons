@@ -19,6 +19,7 @@
       "hp": 270,
       "maxHp": 270,
       "mp": 64,
+      "maxMp": 64,
       "strength": 25,
       "vitality": 22,
       "magic": 14,
@@ -41,12 +42,12 @@
         "cost": 8,
         "power": 0,
         "ailment": "poison",
-        "ailmentChance": 0.8
+        "ailmentChance": 0.5
       },
       {
         "name": "Fang Breaker",
         "type": "physical",
-        "cost": 9,
+        "cost": 0,
         "power": 35
       }
     ],

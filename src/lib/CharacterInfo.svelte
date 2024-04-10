@@ -1,34 +1,31 @@
 <script>
   import { tweened } from 'svelte/motion';
   import { cubicOut } from 'svelte/easing';
+  import { player, currentEnemy } from './stores.js';
 
-  export let character;
   export let type;
 
-  let htmlContent;
-
-  const hpBar = tweened(character.stats.hp, {
-    duration: 400,
-    easing: cubicOut
-  });
-
-  const mpBar = tweened(character.stats.mp, {
-    duration: 400,
-    easing: cubicOut
-  });
+  let character;
 
   $: {
-    hpBar.set(character.stats.hp);
-    mpBar.set(character.stats.mp);
+    character = type === 'player' ? $player : $currentEnemy;
+  }
+
+  const hpBar = tweened(0, { duration: 400, easing: cubicOut });
+  const mpBar = tweened(0, { duration: 400, easing: cubicOut });
+
+  $: {
+    if (character) {
+      hpBar.set(character.stats.hp);
+      mpBar.set(character.stats.mp);
+    }
   }
 </script>
 
 <div class="info-wrap">
   <div class={`${type}-info`}>
-    <h3>{character.name}
-    </h3>
+    <h3>{character.name}</h3>
   </div>
-
   <div class={`${type}-stats`}>
     <div class="stat-bars">
       <div class="bar-wrapper">
@@ -53,9 +50,6 @@
   <strong>Dark:</strong> {character.resistances.dark}</p> -->
 
 <style>
-  :global(.avatar) {
-    height: 52px;
-  }
   .resistances {
     column-count: 2;
     max-width: 350px;

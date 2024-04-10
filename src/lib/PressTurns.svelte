@@ -24,15 +24,20 @@ export let isPlayerTurn;
 
 <style>
 .press-turns {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  background-color: #000;
+  position: absolute;
+  z-index: 9;
+  top: 12vh;
+  left: 4vw;
   color: #fff;
 }
 
-.player-turns,
+.player-turns {
+  text-align: left;
+}
 .enemy-turns {
-  text-align: center;
+  text-align: right;
+}
+.avatar {
+  height: 72px;
 }
 </style>

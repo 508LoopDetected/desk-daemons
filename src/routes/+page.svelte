@@ -3,13 +3,11 @@
 
 </script>
 
-<main>
-  <Battle
-    playerModel="player"
-    enemyModels={['female_secretary']}
-    objectModels={['PC']}
-  />
-</main>
+<Battle
+  playerModel="player"
+  enemyModels={['female_secretary']}
+  objectModels={['PC']}
+/>
 
 <style type="text/css">
   :global(body) {

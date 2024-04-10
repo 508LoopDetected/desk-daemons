@@ -39,6 +39,12 @@
   },
   "skills": [
     {
+      "name": "Basic Attack",
+      "type": "physical",
+      "cost": 0,
+      "power": 10
+    },
+    {
       "name": "Agi 🔥",
       "type": "fire",
       "cost": 5,
