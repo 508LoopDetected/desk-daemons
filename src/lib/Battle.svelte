@@ -2,7 +2,7 @@
 	////////////////////////////////////////////
 	// CALLING ALL DAEMONS...WE ARE DESKBOUND //
 	////////////////////////////////////////////
-	
+
 	import { onMount } from 'svelte';
 	import {
 		player,
@@ -44,15 +44,39 @@
 	let currentAction = defaultAnimation;
 
 	const cameraPositions = {
-		screenMode: { x: 23.12, y: 203.01, z: 172.84 },
-		defaultView: { x: -308.92, y: 371.33, z: -149.27 },
-		playerFocus: { x: 42.97, y: 334.09, z: 248.67 },
+		screenMode: {
+			x: 23.12,
+			y: 203.01,
+			z: 172.84
+		},
+		defaultView: {
+			x: -308.92,
+			y: 371.33,
+			z: -149.27
+		},
+		playerFocus: {
+			x: 42.97,
+			y: 334.09,
+			z: 248.67
+		},
 	};
 
 	const cameraTargets = {
-		screenMode: { x: 23.02, y: 202.70, z: 174.82 },
-		defaultView: { x: -184.21, y: 352.09, z: 107.67 },
-		playerFocus: { x: -19.46, y: 132.50, z: -91.13 },
+		screenMode: {
+			x: 23.02,
+			y: 202.70,
+			z: 174.82
+		},
+		defaultView: {
+			x: -184.21,
+			y: 352.09,
+			z: 107.67
+		},
+		playerFocus: {
+			x: -19.46,
+			y: 132.50,
+			z: -91.13
+		},
 	};
 
 	let currentEnemyData = $enemies[Math.floor(Math.random() * $enemies.length)];
@@ -61,14 +85,20 @@
 	let disableGUI = false; // helper for animations
 
 	// set press turns
-	$player = { ...$player, pressTurns: PRESS_TURN_MAX };
+	$player = {
+		...$player,
+		pressTurns: PRESS_TURN_MAX
+	};
 	$currentEnemy.pressTurns = PRESS_TURN_MAX;
-	$battleLog = [...$battleLog, { type: 'system-message', message: `A wild ${$currentEnemy.name} appeared!` }];
+	$battleLog = [...$battleLog, {
+		type: 'system-message',
+		message: `A wild ${$currentEnemy.name} appeared!`
+	}];
 
 	// DOOT DOOT
 	onMount(() => {
 		if (!isWebGLAvailable()) {
-		alert('WebGL is not available in your browser.');
+			alert('WebGL is not available in your browser.');
 			return;
 		}
 		initScene();
@@ -101,7 +131,10 @@
 		directionalLight.position.set(-5, -5, -5);
 		scene.add(directionalLight);
 
-		renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+		renderer = new THREE.WebGLRenderer({
+			antialias: true,
+			alpha: true
+		});
 		renderer.setSize(sceneContainer.clientWidth, sceneContainer.clientHeight);
 		renderer.shadowMap.enabled = true;
 		sceneContainer.appendChild(renderer.domElement);
@@ -174,7 +207,7 @@
 		const isPlayerAttacker = attacker === $player;
 		const attackerName = isPlayerAttacker ? $player.name : $currentEnemy.name;
 		const defenderName = !isPlayerAttacker ? $player.name : $currentEnemy.name;
-		
+
 		// PHYSICAL skill used
 		if (action.type === 'physical') {
 			const {
@@ -208,7 +241,7 @@
 				$currentEnemy.pressTurns = isCrit ? Math.min($currentEnemy.pressTurns, PRESS_TURN_MAX) : Math.max($currentEnemy.pressTurns - 1, 0);
 			}
 
-		// MP-based skill used
+			// MP-based skill used
 		} else if (attacker.stats.mp < action.cost) { // unaffordable skill!
 			$battleLog = [...$battleLog, {
 				type: 'system-message',
@@ -234,7 +267,7 @@
 					scene.add(statusEffect);
 					setTimeout(() => moveCamera('defaultView'), 1500); // reset camera
 				});
-				
+
 				// action complete, spend a press turn
 				if (isPlayerAttacker) {
 					$player.pressTurns = Math.max($player.pressTurns - 1, 0);
@@ -242,7 +275,7 @@
 					$currentEnemy.pressTurns = Math.max($currentEnemy.pressTurns - 1, 0);
 				}
 
-			// AILMENT skill used
+				// AILMENT skill used
 			} else if (action.type === 'ailment') {
 				// make sure defender isn't already afflicted
 				if (!defender.ailments || !defender.ailments[action.ailment]) {
@@ -281,7 +314,7 @@
 					// if we wanted to punish the failure...
 					// attacker.pressTurns = Math.max(attacker.pressTurns - 1, 0);
 				}
-				
+
 				// action complete, spend a press turn
 				if (isPlayerAttacker) {
 					$player.pressTurns = Math.max($player.pressTurns - 1, 0);
@@ -289,7 +322,7 @@
 					$currentEnemy.pressTurns = Math.max($currentEnemy.pressTurns - 1, 0);
 				}
 
-			// MAGIC skill used
+				// MAGIC skill used
 			} else {
 				const {
 					damage,
@@ -318,7 +351,7 @@
 					}];
 					setAction(attacker.path, 'Magic');
 				}
-				
+
 				// action complete, spend a press turn
 				if (isPlayerAttacker) {
 					$player.pressTurns = isCrit ? Math.min($player.pressTurns, PRESS_TURN_MAX) : Math.max($player.pressTurns - 1, 0);
@@ -327,7 +360,7 @@
 				}
 			}
 		}
-		
+
 
 		// immediately end turn if defender is killed
 		if (defender.stats.hp <= 0) {
@@ -372,7 +405,7 @@
 		// who ran out of press turns / what to do next?
 		setTimeout(() => { // let it breathe
 			if ($currentEnemy.pressTurns > 0) {
-		  		isPlayerTurn = false;
+				isPlayerTurn = false;
 				$battleLog = [...$battleLog, {
 					type: 'system-message',
 					message: `--- ENEMY TURN! ---`
@@ -393,166 +426,178 @@
 					}
 				}, 3000);
 			} else {
-					//reset press turns
-					$player.pressTurns = PRESS_TURN_MAX;
-					$currentEnemy.pressTurns = PRESS_TURN_MAX;
-					isPlayerTurn = true;
-					// ...waiting for player to do something
-					$battleLog = [...$battleLog, {
-						type: 'system-message',
-						message: `--- YOUR TURN! ---`
-					}];
+				//reset press turns
+				$player.pressTurns = PRESS_TURN_MAX;
+				$currentEnemy.pressTurns = PRESS_TURN_MAX;
+				isPlayerTurn = true;
+				// ...waiting for player to do something
+				$battleLog = [...$battleLog, {
+					type: 'system-message',
+					message: `--- YOUR TURN! ---`
+				}];
 			}
 		}, 3000);
 	}
 
 
-  function checkGameOver() {
-	if ($player.stats.hp <= 0) {
-		setAction($currentEnemy.path, 'Victory');
-		setAction($player.path, 'Defeat');
-	  $battleLog = [...$battleLog, { type: 'system-message', message: `${$player.name} has been defeated! Game Over.` }];
-	  isPlayerTurn = false;
-	  return true;
-	}
-	
-	if ($currentEnemy.stats.hp <= 0) {
-		setAction($player.path, 'Victory');
-		setAction($currentEnemy.path, 'Defeat');
-	  $battleLog = [...$battleLog, { type: 'system-message', message: `${$currentEnemy.name} has been defeated! You win!` }];
-	  isPlayerTurn = false;
-	  return true;
-	}
-	
-	return false;
-  }
-
-
-
-  function setAction(path, actionName) {
-	const mixer = mixers[path];
-	if (!mixer || !currentActions[path][actionName]) {
-	  console.warn(`Action not found for model: ${path}, action: ${actionName}`);
-	  return;
-	}
-
-	// Fade out the current action
-	if (currentActions[path][currentAction]) {
-	  const prevAction = currentActions[path][currentAction];
-	  prevAction.fadeOut(0.5);
-	}
-
-	// Prepare and play the new action
-	const newAction = currentActions[path][actionName];
-	newAction.reset();
-	newAction.fadeIn(0.5);
-	newAction.play();
-
-	// Update the currentAction tracker
-	currentAction = actionName;
-
-	// Set up a delayed transition back to "Typing" for non-"Typing" animations
-	if (actionName !== defaultAnimation) {
-	  const animationDuration = newAction.getClip().duration;
-	  setTimeout(() => {
-		setAction(path, defaultAnimation);
-	  }, (animationDuration - 0.5) * 1000); // Subtract 0.5s for the fade-out transition
-	}
-  }
-
-  /*function levelUp(character) {
-	const distribution = STAT_DISTRIBUTION;
-	for (const stat in distribution) {
-	  const increase = Math.floor(STAT_POINTS_PER_LEVEL * distribution[stat]);
-	  character.stats[stat] += increase;
-	}
-	character.level += 1;
-  }*/
-
-  function moveCamera(mode, callback) {
-	const position = cameraPositions[mode];
-	const target = cameraTargets[mode];
-
-	const tweenPosition = new TWEEN.Tween(camera.position)
-	  .to(position, 1000)
-	  .easing(TWEEN.Easing.Quadratic.InOut)
-	  .start();
-
-	const tweenTarget = new TWEEN.Tween(controls.target)
-	  .to(target, 500)
-	  .easing(TWEEN.Easing.Quadratic.InOut)
-	  .onComplete(() => {
-		if (typeof callback === 'function') {
-		  callback();
+	function checkGameOver() {
+		if ($player.stats.hp <= 0) {
+			setAction($currentEnemy.path, 'Victory');
+			setAction($player.path, 'Defeat');
+			$battleLog = [...$battleLog, {
+				type: 'system-message',
+				message: `${$player.name} has been defeated! Game Over.`
+			}];
+			isPlayerTurn = false;
+			return true;
 		}
-	  })
-	  .start();
-  }
 
-  function updateCameraPosition() {
-	cameraPosition = `{ x: ${camera.position.x.toFixed(2)}, y: ${camera.position.y.toFixed(2)}, z: ${camera.position.z.toFixed(2)} }`;
-  }
+		if ($currentEnemy.stats.hp <= 0) {
+			setAction($player.path, 'Victory');
+			setAction($currentEnemy.path, 'Defeat');
+			$battleLog = [...$battleLog, {
+				type: 'system-message',
+				message: `${$currentEnemy.name} has been defeated! You win!`
+			}];
+			isPlayerTurn = false;
+			return true;
+		}
 
-  function updateCameraTarget() {
-	cameraTarget = `{ x: ${controls.target.x.toFixed(2)}, y: ${controls.target.y.toFixed(2)}, z: ${controls.target.z.toFixed(2)} }`;
-  }
-
-  function particleStatusEffect(character, color, texture, scaleFactor = 1) {
-	const particleCount = 20;
-	const particles = new THREE.BufferGeometry();
-	const particleMaterial = new THREE.PointsMaterial({
-	  color: color,
-	  size: character.scale.x * 20 * scaleFactor, // Adjust the particle size based on the scaleFactor
-	  transparent: true,
-	  opacity: 0,
-	  map: new THREE.TextureLoader().load(texture),
-	  blending: THREE.NormalBlending,
-	});
-
-	const particlePositions = new Float32Array(particleCount * 3);
-	const characterScale = character.scale;
-	const characterPosition = character.position;
-
-	for (let i = 0; i < particleCount; i++) {
-	  const i3 = i * 3;
-	  particlePositions[i3] = characterPosition.x + (Math.random() - 0.5) * characterScale.x * 150 * scaleFactor; // Adjust the spread based on the scaleFactor
-	  particlePositions[i3 + 1] = characterPosition.y + Math.random() * characterScale.y * 170 * scaleFactor; // Adjust the vertical spread based on the scaleFactor
-	  particlePositions[i3 + 2] = characterPosition.z + (Math.random() - 0.5) * characterScale.z * 150 * scaleFactor; // Adjust the spread based on the scaleFactor
+		return false;
 	}
 
-	particles.setAttribute('position', new THREE.Float32BufferAttribute(particlePositions, 3));
 
-	const particleSystem = new THREE.Points(particles, particleMaterial);
+	//////////////////////////
+	// CAMERA & 3D MOVEMENT //
+	//////////////////////////
 
-	const fadeInDuration = 1000;
-	const fadeOutDuration = 1000;
-	const totalDuration = fadeInDuration + fadeOutDuration;
+	function setAction(path, actionName) {
+		const mixer = mixers[path];
+		if (!mixer || !currentActions[path][actionName]) {
+			console.warn(`Action not found for model: ${path}, action: ${actionName}`);
+			return;
+		}
 
-	const tweenAnimation = new TWEEN.Tween({ opacity: 0, time: 0 })
-	  .to({ opacity: 1, time: 1 }, totalDuration)
-	  .easing(TWEEN.Easing.Quadratic.Out)
-	  .onUpdate(({ opacity, time }) => {
-		particleMaterial.opacity = opacity < 0.5 ? opacity * 2 : (1 - opacity) * 2;
-		const easedTime = TWEEN.Easing.Quadratic.InOut(time);
-		const verticalOffset = easedTime * characterScale.y * 1 * scaleFactor; // Adjust the upward velocity based on the scaleFactor
+		// Fade out the current action
+		if (currentActions[path][currentAction]) {
+			const prevAction = currentActions[path][currentAction];
+			prevAction.fadeOut(0.5);
+		}
+
+		// Prepare and play the new action
+		const newAction = currentActions[path][actionName];
+		newAction.reset();
+		newAction.fadeIn(0.5);
+		newAction.play();
+
+		// Update the currentAction tracker
+		currentAction = actionName;
+
+		// Set up a delayed transition back to "Typing" for non-"Typing" animations
+		if (actionName !== defaultAnimation) {
+			const animationDuration = newAction.getClip().duration;
+			setTimeout(() => {
+				setAction(path, defaultAnimation);
+			}, (animationDuration - 0.5) * 1000); // Subtract 0.5s for the fade-out transition
+		}
+	}
+
+	function moveCamera(mode, callback) {
+		const position = cameraPositions[mode];
+		const target = cameraTargets[mode];
+
+		const tweenPosition = new TWEEN.Tween(camera.position)
+			.to(position, 1000)
+			.easing(TWEEN.Easing.Quadratic.InOut)
+			.start();
+
+		const tweenTarget = new TWEEN.Tween(controls.target)
+			.to(target, 500)
+			.easing(TWEEN.Easing.Quadratic.InOut)
+			.onComplete(() => {
+				if (typeof callback === 'function') {
+					callback();
+				}
+			})
+			.start();
+	}
+
+	function updateCameraPosition() {
+		cameraPosition = `{ x: ${camera.position.x.toFixed(2)}, y: ${camera.position.y.toFixed(2)}, z: ${camera.position.z.toFixed(2)} }`;
+	}
+
+	function updateCameraTarget() {
+		cameraTarget = `{ x: ${controls.target.x.toFixed(2)}, y: ${controls.target.y.toFixed(2)}, z: ${controls.target.z.toFixed(2)} }`;
+	}
+
+
+	///////////////////////////
+	// PARTICLE EFFECTS //
+	///////////////////////////
+
+	function particleStatusEffect(character, color, texture, scaleFactor = 1) {
+		const particleCount = 20;
+		const particles = new THREE.BufferGeometry();
+		const particleMaterial = new THREE.PointsMaterial({
+			color: color,
+			size: character.scale.x * 20 * scaleFactor, // Adjust the particle size based on the scaleFactor
+			transparent: true,
+			opacity: 0,
+			map: new THREE.TextureLoader().load(texture),
+			blending: THREE.NormalBlending,
+		});
+
+		const particlePositions = new Float32Array(particleCount * 3);
+		const characterScale = character.scale;
+		const characterPosition = character.position;
 
 		for (let i = 0; i < particleCount; i++) {
-		  const i3 = i * 3;
-		  particlePositions[i3 + 1] += verticalOffset;
+			const i3 = i * 3;
+			particlePositions[i3] = characterPosition.x + (Math.random() - 0.5) * characterScale.x * 150 * scaleFactor; // Adjust the spread based on the scaleFactor
+			particlePositions[i3 + 1] = characterPosition.y + Math.random() * characterScale.y * 170 * scaleFactor; // Adjust the vertical spread based on the scaleFactor
+			particlePositions[i3 + 2] = characterPosition.z + (Math.random() - 0.5) * characterScale.z * 150 * scaleFactor; // Adjust the spread based on the scaleFactor
 		}
 
 		particles.setAttribute('position', new THREE.Float32BufferAttribute(particlePositions, 3));
-	  })
-	  .onComplete(() => {
-		scene.remove(particleSystem);
-	  });
 
-	tweenAnimation.start();
+		const particleSystem = new THREE.Points(particles, particleMaterial);
 
-	return particleSystem;
-  }
+		const fadeInDuration = 1000;
+		const fadeOutDuration = 1000;
+		const totalDuration = fadeInDuration + fadeOutDuration;
 
+		const tweenAnimation = new TWEEN.Tween({
+				opacity: 0,
+				time: 0
+			})
+			.to({
+				opacity: 1,
+				time: 1
+			}, totalDuration)
+			.easing(TWEEN.Easing.Quadratic.Out)
+			.onUpdate(({
+				opacity,
+				time
+			}) => {
+				particleMaterial.opacity = opacity < 0.5 ? opacity * 2 : (1 - opacity) * 2;
+				const easedTime = TWEEN.Easing.Quadratic.InOut(time);
+				const verticalOffset = easedTime * characterScale.y * 1 * scaleFactor; // Adjust the upward velocity based on the scaleFactor
 
+				for (let i = 0; i < particleCount; i++) {
+					const i3 = i * 3;
+					particlePositions[i3 + 1] += verticalOffset;
+				}
+
+				particles.setAttribute('position', new THREE.Float32BufferAttribute(particlePositions, 3));
+			})
+			.onComplete(() => {
+				scene.remove(particleSystem);
+			});
+
+		tweenAnimation.start();
+
+		return particleSystem;
+	}
 </script>
 
 <main>
@@ -645,13 +690,6 @@
 </main>
 
 <style>
-  /*.toggle-mode {
-	top: 0;
-	left: 0;
-	position: fixed;
-	z-index: 999;
-  }*/
-
   .webgl-container {
 	position: absolute;
 	top: 0;
