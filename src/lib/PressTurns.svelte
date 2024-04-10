@@ -26,16 +26,13 @@ export let isPlayerTurn;
 .press-turns {
   position: absolute;
   z-index: 9;
-  top: 12vh;
-  left: 4vw;
+  top: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
   color: #fff;
-}
-
-.player-turns {
-  text-align: left;
-}
-.enemy-turns {
-  text-align: right;
+  text-align: center;
+  font-size: 1.2rem;
 }
 .avatar {
   height: 72px;

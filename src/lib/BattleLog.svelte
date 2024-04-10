@@ -1,8 +1,9 @@
 <script>
-  import { player, battleLog } from './stores.js';
+  import { player } from './stores.js';
   import { scale } from 'svelte/transition';
   import { onDestroy } from 'svelte';
 
+  export let battleLog;
   export let currentEnemy;
 
   let fadeOutTimer;
@@ -24,38 +25,40 @@
   });
 </script>
 
-<div class="battle-log">
-  {#each remainingMessages as logEntry}
-    <p class={logEntry.type}>
-      {#if logEntry.type === 'player-action'}
-        <span class="player-name">{$player.name}</span> {logEntry.message}
-      {:else if logEntry.type === 'enemy-action'}
-        <span class="enemy-name">{currentEnemy.name}</span> {logEntry.message}
-      {:else if logEntry.type === 'calculation'}
-        <pre>{logEntry.message}</pre>
-      {:else}
-        {logEntry.message}
-      {/if}
-    </p>
-  {/each}
-</div>
-
-<div id="latestMessage">
-  {#key latestMessage}
-    {#if latestMessage}
-      <p class={latestMessage.type} class:flash={true} in:scale={{ start: 0.5, duration: 500 }} use:startFadeOutTimer>
-        {#if latestMessage.type === 'player-action'}
-          <span class="player-name">{$player.name}</span> {latestMessage.message}
-        {:else if latestMessage.type === 'enemy-action'}
-          <span class="enemy-name">{currentEnemy.name}</span> {latestMessage.message}
-        {:else if latestMessage.type === 'calculation'}
-          <pre>{latestMessage.message}</pre>
+<div id="battleLog">
+  <div class="battle-log">
+    {#each remainingMessages as logEntry}
+      <p class={logEntry.type}>
+        {#if logEntry.type === 'player-action'}
+          <span class="player-name">{$player.name}</span> {logEntry.message}
+        {:else if logEntry.type === 'enemy-action'}
+          <span class="enemy-name">{currentEnemy.name}</span> {logEntry.message}
+        {:else if logEntry.type === 'calculation'}
+          <pre>{logEntry.message}</pre>
         {:else}
-          {latestMessage.message}
+          {logEntry.message}
         {/if}
       </p>
-    {/if}
-  {/key}
+    {/each}
+  </div>
+
+  <div id="latestMessage">
+    {#key latestMessage}
+      {#if latestMessage}
+        <p class={latestMessage.type} class:flash={true} in:scale={{ start: 0.5, duration: 500 }} use:startFadeOutTimer>
+          {#if latestMessage.type === 'player-action'}
+            <span class="player-name">{$player.name}</span> {latestMessage.message}
+          {:else if latestMessage.type === 'enemy-action'}
+            <span class="enemy-name">{$currentEnemy.name}</span> {latestMessage.message}
+          {:else if latestMessage.type === 'calculation'}
+            <pre>{latestMessage.message}</pre>
+          {:else}
+            {latestMessage.message}
+          {/if}
+        </p>
+      {/if}
+    {/key}
+  </div>
 </div>
 
 <style>
@@ -64,6 +67,13 @@
     /*display: flex;
     flex-direction: column-reverse;*/
     display: none;
+  }
+
+  #battleLog {
+    position: absolute;
+    top: 45%;
+    width: 94vw;
+    left: 2vw;
   }
 
   #latestMessage {
