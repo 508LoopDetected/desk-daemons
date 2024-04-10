@@ -8,10 +8,11 @@
   "scale": { "x": 1, "y": 1, "z": 1 },
   "animations": [
     "Typing",
-    "SittingAndPointing",
-    "SittingVictory",
-    "SitToStand",
-    "MaleSittingPose"
+    "Victory",
+    "Magic",
+    "Ailment",
+    "Damage",
+    "Defeat"
   ],
   "defaultAnimation": "Typing",
   "level": 20,

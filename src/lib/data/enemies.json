@@ -8,9 +8,9 @@
     "rotation": { "x": -0.2, "y": -135, "z": 0 },
     "scale": { "x": 15, "y": 15, "z": 15 },
     "animations": [
-      "CrazyGesture",
-      "RhumbaDancing",
-      "Insult",
+      "Magic",
+      "Ailment",
+      "Victory",
       "Idle"
     ],
     "defaultAnimation": "Idle",

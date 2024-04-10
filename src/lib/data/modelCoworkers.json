@@ -1,21 +1,5 @@
 [
   {
-    "path": "starman",
-    "model": "starman.fbx",
-    "mesh": null,
-    "position": { "x": 0, "y": 0, "z": 0 },
-    "rotation": { "x": 0, "y": 0, "z": 0 },
-    "scale": { "x": 50, "y": 50, "z": 50 },
-    "animations": [
-      "Typing",
-      "SittingAndPointing",
-      "SittingVictory",
-      "SitToStand",
-      "MaleSittingPose"
-    ],
-    "defaultAnimation": "Typing"
-  },
-  {
     "path": "female_secretary",
     "model": "female_secretary.fbx",
     "mesh": "female_secretary.png",
@@ -23,9 +7,9 @@
     "rotation": { "x": -0.2, "y": -135, "z": 0 },
     "scale": { "x": 15, "y": 15, "z": 15 },
     "animations": [
-      "CrazyGesture",
-      "RhumbaDancing",
-      "Insult",
+      "Ailment",
+      "Magic",
+      "Victory",
       "Idle"
     ],
     "defaultAnimation": "Idle"

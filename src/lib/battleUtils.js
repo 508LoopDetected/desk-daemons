@@ -53,7 +53,7 @@ function calculateDamage(attacker, defender, skill, isPlayerAttacker) {
     skillPower = calculateMagicSkillPower(attacker, skill);
   } else if (['fire', 'ice', 'electric', 'force', 'light', 'dark'].includes(skill.type)) {
     skillPower = calculateMagicSkillPower(attacker, skill);
-  } else {
+  } else if (skill.type === 'physical') {
     skillPower = calculatePhysicalSkillPower(attacker, skill);
   }
 
