@@ -1,6 +1,6 @@
-# Desk Daemons: A DeskBound Tangent
+# Desk Daemons
 
-Desk Daemons is a self-imposed challenge to use SvelteKit and Three.js to build a 3D turn-based RPG battle system. There's no real end-goal in sight, just something to occasionally revisit when practicing new concepts or whatever.
+A self-imposed challenge to use SvelteKit and Three.js to build a 3D turn-based RPG battle system. There's no real end-goal in sight, just something to occasionally revisit when practicing new concepts or whatever.
 
 ### Done so far:
 - Battle logic & skill formulas: damage, crit, ailment, healing, etc.
