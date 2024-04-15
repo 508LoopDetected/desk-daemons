@@ -21,6 +21,7 @@
 	import BattleLog from './BattleLog.svelte';
 	import PressTurns from './PressTurns.svelte';
 	import CharacterInfo from './CharacterInfo.svelte';
+	import ActionMenu from './ActionMenu.svelte';
 	import modelCoworkers from '$lib/data/modelCoworkers.json';
 	import modelObjects from '$lib/data/modelObjects.json';
 
@@ -196,148 +197,35 @@
 		if (checkGameOver()) return;
 		disableGUI.set(true);
 
-		// first, report any ailments
-		updateAilmentDurations(attacker).forEach(message => {
-			battleLog.update(log => [...log, {
-				type: 'status-effect',
-				message
-			}]);
-		});
-
 		// is it the player or enemy's turn?
 		const isPlayerAttacker = attacker === $player;
 		const attackerName = isPlayerAttacker ? $player.name : $currentEnemy.name;
 		const defenderName = !isPlayerAttacker ? $player.name : $currentEnemy.name;
 
-		// PHYSICAL skill used
-		if (action.type === 'physical') {
-			const {
-				damage,
-				isCrit,
-				resistanceMultiplier
-			} = calculateDamage(attacker, defender, action, isPlayerAttacker);
-			if (resistanceMultiplier === -1) {
-				// whoops, attack was absorbed
-				const healAmount = Math.abs(damage);
-				defender.stats.hp = Math.min(defender.stats.hp + healAmount, defender.stats.maxHp);
-				battleLog.update(log => [...log, {
-					type: isPlayerAttacker ? 'player-action' : 'enemy-action',
-					message: `attacks ${defenderName} and heals ${healAmount} HP!`
-				}]);
-			} else {
-				// landed hit! check for crit & log results
-				defender.stats.hp = Math.max(defender.stats.hp - damage, 0);
-				let logMessage = `attacks ${defenderName} and deals ${damage} damage!`;
-				if (isCrit) logMessage += ' (Critical Hit! +1 Press Turn)';
-				battleLog.update(log => [...log, {
-					type: isPlayerAttacker ? 'player-action' : 'enemy-action',
-					message: logMessage
-				}]);
-				setAction(attacker.path, 'Magic');
-			}
-			// action complete, spend a press turn
-			if (isPlayerAttacker) {
-				$player.pressTurns = isCrit ? Math.min($player.pressTurns, PRESS_TURN_MAX) : Math.max($player.pressTurns - 1, 0);
-			} else {
-				$currentEnemy.pressTurns = isCrit ? Math.min($currentEnemy.pressTurns, PRESS_TURN_MAX) : Math.max($currentEnemy.pressTurns - 1, 0);
-			}
+		// delay action and report ailment if an affliction is present
+		const hasAffliction = updateAilmentDurations(attacker, battleLog);
+		const actionDelay = hasAffliction ? 2000 : 0;
 
-			// MP-based skill used
-		} else if (attacker.stats.mp < action.cost) { // unaffordable skill!
-			battleLog.update(log => [...log, {
-				type: 'system-message',
-				message: `${attacker.name} doesn't have enough MP to use ${action.name}!`
-			}]);
-		} else { // affordable skill!
-
-			// SUPPORT skill used
-			if (action.type === 'healing') {
-				attacker.stats.mp -= action.cost;
-				// calculate based on which healing skill
-				const healAmount = calculateHeal(attacker, action);
-				// heal no more than caster's max HP
-				attacker.stats.hp = Math.min(attacker.stats.hp + healAmount, attacker.stats.maxHp);
-				battleLog.update(log => [...log, {
-					type: 'player-action',
-					message: `used ${action.name} and healed ${healAmount} HP!`
-				}]);
-				// visual effects
-				moveCamera('playerFocus', () => {
-					setAction(attacker.path, 'Victory'); // character pose
-					const statusEffect = particleStatusEffect(attacker, 0x00ff00, 'plus.png', 2);
-					scene.add(statusEffect);
-					setTimeout(() => moveCamera('defaultView'), 1500); // reset camera
-				});
-
-				// action complete, spend a press turn
-				if (isPlayerAttacker) {
-					$player.pressTurns = Math.max($player.pressTurns - 1, 0);
-				} else {
-					$currentEnemy.pressTurns = Math.max($currentEnemy.pressTurns - 1, 0);
-				}
-
-				// AILMENT skill used
-			} else if (action.type === 'ailment') {
-				// make sure defender isn't already afflicted
-				if (!defender.ailments || !defender.ailments[action.ailment]) {
-					// apply RNG and roll the ailment
-					const isAilmentApplied = applyAilment(attacker, defender, action);
-					if (!isAilmentApplied) { // womp womp, it failed
-						battleLog.update(log => [...log, {
-							type: isPlayerAttacker ? 'player-action' : 'enemy-action',
-							message: `tried casting ${action.name}...but it failed!`
-						}]);
-					} else { // success! spend MP and proceed
-						attacker.stats.mp -= action.cost;
-						battleLog.update(log => [...log, {
-							type: isPlayerAttacker ? 'status-effect' : 'enemy-action',
-							message: `cast ${action.name} and afflicted ${defenderName} with ${action.ailment}!`
-						}]);
-						// visual effects
-						setAction(attacker.path, 'Ailment');
-						const statusEffect = action.ailment === 'sleep' ?
-							particleStatusEffect(defender, 0x05bff7, 'zzz.png', 2) :
-							particleStatusEffect(defender, 0xA70BD8, 'skull.gif', 1);
-						scene.add(statusEffect);
-					}
-				} else {
-					battleLog.update(log => [...log, {
-						type: isPlayerAttacker ? 'player-action' : 'enemy-action',
-						message: `tried casting ${action.name}...but ${defenderName} is already afflicted with ${action.ailment}!`
-					}]);
-					// if we wanted to punish the failure...
-					// attacker.pressTurns = Math.max(attacker.pressTurns - 1, 0);
-				}
-
-				// action complete, spend a press turn
-				if (isPlayerAttacker) {
-					$player.pressTurns = Math.max($player.pressTurns - 1, 0);
-				} else {
-					$currentEnemy.pressTurns = Math.max($currentEnemy.pressTurns - 1, 0);
-				}
-
-				// MAGIC skill used
-			} else {
+  		setTimeout(() => {
+			// PHYSICAL skill used
+			if (action.type === 'physical') {
 				const {
 					damage,
 					isCrit,
 					resistanceMultiplier
 				} = calculateDamage(attacker, defender, action, isPlayerAttacker);
-
 				if (resistanceMultiplier === -1) {
 					// whoops, attack was absorbed
 					const healAmount = Math.abs(damage);
 					defender.stats.hp = Math.min(defender.stats.hp + healAmount, defender.stats.maxHp);
-					attacker.pressTurns = Math.max(attacker.pressTurns - 1, 0);
 					battleLog.update(log => [...log, {
 						type: isPlayerAttacker ? 'player-action' : 'enemy-action',
-						message: `used ${action.name} and healed ${healAmount} HP to ${defenderName}!`
+						message: `attacks ${defenderName} and heals ${healAmount} HP!`
 					}]);
 				} else {
-					// landed hit! spend MP, check for crit, & log results
-					attacker.stats.mp -= action.cost;
+					// landed hit! check for crit & log results
 					defender.stats.hp = Math.max(defender.stats.hp - damage, 0);
-					let logMessage = `used ${action.name} and dealt ${damage} damage!`;
+					let logMessage = `attacks ${defenderName} and deals ${damage} damage!`;
 					if (isCrit) logMessage += ' (Critical Hit! +1 Press Turn)';
 					battleLog.update(log => [...log, {
 						type: isPlayerAttacker ? 'player-action' : 'enemy-action',
@@ -345,92 +233,198 @@
 					}]);
 					setAction(attacker.path, 'Magic');
 				}
-
 				// action complete, spend a press turn
 				if (isPlayerAttacker) {
 					$player.pressTurns = isCrit ? Math.min($player.pressTurns, PRESS_TURN_MAX) : Math.max($player.pressTurns - 1, 0);
 				} else {
 					$currentEnemy.pressTurns = isCrit ? Math.min($currentEnemy.pressTurns, PRESS_TURN_MAX) : Math.max($currentEnemy.pressTurns - 1, 0);
 				}
-			}
-		}
 
-
-		// immediately end turn if defender is killed
-		if (defender.stats.hp <= 0) {
-			endTurn();
-			return;
-		}
-
-
-		if (attacker.pressTurns === 0) {
-			endTurn();
-		} else if (!isPlayerAttacker) {
-			setTimeout(() => {
-				if ($currentEnemy.ailments && $currentEnemy.ailments.sleep) {
-					$currentEnemy.pressTurns = 0;
-					let statusEffect = particleStatusEffect($currentEnemy, 0x05bff7, 'zzz.png', 2);
-					scene.add(statusEffect);
-					endTurn();
-				} else {
-					const skill = $currentEnemy.skills[Math.floor(Math.random() * $currentEnemy.skills.length)];
-					performAction(skill, $currentEnemy, $player);
-				}
-			}, 2000);
-		}
-
-		setTimeout(() => disableGUI.set(false), 2000);
-	}
-
-	function endTurn() {
-		if (checkGameOver()) return;
-
-		// check if player is asleep
-		if ($player.ailments && $player.ailments.sleep) {
-			setTimeout(() => { // let it breathe
-				battleLog.update(log => [...log, {
-					type: 'status-effect',
-					message: `💤 ${$player.name} is asleep! 💤`
-				}]);
-			}, 3000);
-			$player.pressTurns = 0; // set player's press turns to 0 if asleep
-		}
-
-		// who ran out of press turns / what to do next?
-		setTimeout(() => { // let it breathe
-			if ($currentEnemy.pressTurns > 0) {
-				isPlayerTurn.set(false);
+			// MP-based skill used
+			} else if (attacker.stats.mp < action.cost) { // unaffordable skill!
 				battleLog.update(log => [...log, {
 					type: 'system-message',
-					message: `--- ENEMY TURN! ---`
+					message: `${attacker.name} doesn't have enough MP to use ${action.name}!`
 				}]);
-				setTimeout(() => { // let it breathe
-					if ($currentEnemy.ailments && $currentEnemy.ailments.sleep) {
+			} else { // affordable skill!
+
+				// SUPPORT skill used
+				if (action.type === 'healing') {
+					attacker.stats.mp -= action.cost;
+					// calculate based on which healing skill
+					const healAmount = calculateHeal(attacker, action);
+					// heal no more than caster's max HP
+					attacker.stats.hp = Math.min(attacker.stats.hp + healAmount, attacker.stats.maxHp);
+					battleLog.update(log => [...log, {
+						type: 'player-action',
+						message: `used ${action.name} and healed ${healAmount} HP!`
+					}]);
+					// visual effects
+					moveCamera('playerFocus', () => {
+						setAction(attacker.path, 'Victory'); // character pose
+						const statusEffect = particleStatusEffect(attacker, 0x00ff00, 'plus.png', 2);
+						scene.add(statusEffect);
+						setTimeout(() => moveCamera('defaultView'), 1500); // reset camera
+					});
+
+					// action complete, spend a press turn
+					if (isPlayerAttacker) {
+						$player.pressTurns = Math.max($player.pressTurns - 1, 0);
+					} else {
+						$currentEnemy.pressTurns = Math.max($currentEnemy.pressTurns - 1, 0);
+					}
+
+				// AILMENT skill used
+				} else if (action.type === 'ailment') {
+				  // make sure defender isn't already afflicted
+				  if (!defender.ailments || !defender.ailments[action.ailment]) {
+				    // apply RNG and roll the ailment
+				    const { isAilmentApplied } = applyAilment(attacker, defender, action, battleLog);
+				    if (!isAilmentApplied) {
+				      // ailment failed (message already added to battleLog in applyAilment function)
+				    } else {
+				      // ailment applied successfully (message already added to battleLog in applyAilment function)
+				      attacker.stats.mp -= action.cost;
+				      // visual effects
+				      setAction(attacker.path, 'Ailment');
+				      const statusEffect = action.ailment === 'sleep' ?
+				        particleStatusEffect(defender, 0x05bff7, 'zzz.png', 2) :
+				        particleStatusEffect(defender, 0xA70BD8, 'skull.gif', 1);
+				      scene.add(statusEffect);
+				    }
+				  } else {
+				    // defender already afflicted
+				    battleLog.update(log => [...log, {
+				      type: isPlayerAttacker ? 'player-action' : 'enemy-action',
+				      message: `tried casting ${action.name}...but ${defenderName} is already afflicted with ${action.ailment}!`
+				    }]);
+					// if we wanted to punish the failure...
+					// attacker.pressTurns = Math.max(attacker.pressTurns - 1, 0);
+				  }
+
+					// action complete, spend a press turn
+					if (isPlayerAttacker) {
+						$player.pressTurns = Math.max($player.pressTurns - 1, 0);
+					} else {
+						$currentEnemy.pressTurns = Math.max($currentEnemy.pressTurns - 1, 0);
+					}
+
+				// MAGIC skill used
+				} else {
+					const {
+						damage,
+						isCrit,
+						resistanceMultiplier
+					} = calculateDamage(attacker, defender, action, isPlayerAttacker);
+
+					if (resistanceMultiplier === -1) {
+						// whoops, attack was absorbed
+						const healAmount = Math.abs(damage);
+						defender.stats.hp = Math.min(defender.stats.hp + healAmount, defender.stats.maxHp);
+						attacker.pressTurns = Math.max(attacker.pressTurns - 1, 0);
 						battleLog.update(log => [...log, {
-							type: 'status-effect',
-							message: `💤 ${$currentEnemy.name} is asleep! 💤`
+							type: isPlayerAttacker ? 'player-action' : 'enemy-action',
+							message: `used ${action.name} and healed ${healAmount} HP to ${defenderName}!`
 						}]);
+					} else {
+						// landed hit! spend MP, check for crit, & log results
+						attacker.stats.mp -= action.cost;
+						defender.stats.hp = Math.max(defender.stats.hp - damage, 0);
+						let logMessage = `used ${action.name} and dealt ${damage} damage!`;
+						if (isCrit) logMessage += ' (Critical Hit! +1 Press Turn)';
+						battleLog.update(log => [...log, {
+							type: isPlayerAttacker ? 'player-action' : 'enemy-action',
+							message: logMessage
+						}]);
+						setAction(attacker.path, 'Magic');
+					}
+
+					// action complete, spend a press turn
+					if (isPlayerAttacker) {
+						$player.pressTurns = isCrit ? Math.min($player.pressTurns, PRESS_TURN_MAX) : Math.max($player.pressTurns - 1, 0);
+					} else {
+						$currentEnemy.pressTurns = isCrit ? Math.min($currentEnemy.pressTurns, PRESS_TURN_MAX) : Math.max($currentEnemy.pressTurns - 1, 0);
+					}
+				}
+			}
+
+
+			// immediately end turn if defender is killed
+			if (defender.stats.hp <= 0) {
+				endTurn();
+				return;
+			}
+
+
+			if (attacker.pressTurns === 0) {
+				endTurn();
+			} else if (!isPlayerAttacker) {
+				setTimeout(() => {
+					if ($currentEnemy.ailments && $currentEnemy.ailments.sleep) {
 						$currentEnemy.pressTurns = 0;
 						let statusEffect = particleStatusEffect($currentEnemy, 0x05bff7, 'zzz.png', 2);
 						scene.add(statusEffect);
 						endTurn();
 					} else {
-						const skill = $currentEnemy.skills[Math.floor(Math.random() * $currentEnemy.skills.length)];
-						performAction(skill, $currentEnemy, $player);
+		        updateAilmentDurations($currentEnemy, battleLog); // update enemy's ailments before their action
+		        setTimeout(() => {
+		          const skill = $currentEnemy.skills[Math.floor(Math.random() * $currentEnemy.skills.length)];
+		          performAction(skill, $currentEnemy, $player);
+		        }, 2000); // add a short delay before enemy's action
 					}
-				}, 3000);
-			} else {
-				//reset press turns
-				$player.pressTurns = PRESS_TURN_MAX;
-				$currentEnemy.pressTurns = PRESS_TURN_MAX;
-				isPlayerTurn.set(true);
-				// ...waiting for player to do something
-				battleLog.update(log => [...log, {
-					type: 'system-message',
-					message: `--- YOUR TURN! ---`
-				}]);
+				}, 2000);
 			}
-		}, 3000);
+
+		}, actionDelay);
+
+		// re-enable GUI unless it's player's last press turn
+		if (isPlayerAttacker && attacker.pressTurns > 1) setTimeout(() => disableGUI.set(false), 2000);
+	}
+
+	function endTurn() {
+	  if (checkGameOver()) return;
+
+	  // Check if player is asleep
+	  if ($player.ailments && $player.ailments.sleep) {
+	    setTimeout(() => {
+	  			updateAilmentDurations($player, battleLog);
+	    }, 3000);
+	    $player.pressTurns = 0;
+	  }
+
+	  // Who ran out of press turns / what to do next?
+	  setTimeout(() => {
+	    if ($currentEnemy.pressTurns > 0) {
+	      isPlayerTurn.set(false);
+	      battleLog.update(log => [...log, {
+	        type: 'system-message',
+	        message: `--- ENEMY TURN! ---`
+	      }]);
+	      setTimeout(() => {
+	        if ($currentEnemy.ailments && $currentEnemy.ailments.sleep) {
+	  				updateAilmentDurations($currentEnemy, battleLog);
+	          $currentEnemy.pressTurns = 0;
+	          let statusEffect = particleStatusEffect($currentEnemy, 0x05bff7, 'zzz.png', 2);
+	          scene.add(statusEffect);
+	          // If the enemy is asleep, end their turn and switch back to player's turn
+	          endTurn();
+	        } else {
+	          const skill = $currentEnemy.skills[Math.floor(Math.random() * $currentEnemy.skills.length)];
+	          performAction(skill, $currentEnemy, $player);
+	        }
+	      }, 3000);
+	    } else {
+	      // Reset press turns
+	      $player.pressTurns = PRESS_TURN_MAX;
+	      $currentEnemy.pressTurns = PRESS_TURN_MAX;
+	      isPlayerTurn.set(true);
+	      disableGUI.set(false)
+	      battleLog.update(log => [...log, {
+	        type: 'system-message',
+	        message: `--- YOUR TURN! ---`
+	      }]);
+	    }
+	  }, 3000);
 	}
 
 
@@ -592,6 +586,11 @@
 
 		return particleSystem;
 	}
+
+	function handleMenuSelect(event) {
+		const selectedAction = event.detail;
+		performAction(selectedAction, $player, $currentEnemy);
+	}
 </script>
 
 <main>
@@ -641,33 +640,14 @@
 				<CharacterInfo character={$player} type="player" />
 			</div>
 
-			<div class="player-actions">
-				{#each $player.skills as skill}
-				<button class="skill-button"
-					class:physical={skill.type === 'physical'}
-					class:healing={skill.type === 'healing'}
-					class:ailment={skill.type === 'ailment'}
-					class:fire={skill.type === 'fire'}
-					class:electric={skill.type === 'electric'}
-					class:ice={skill.type === 'ice'}
-					class:force={skill.type === 'force'}
-					class:light={skill.type === 'light'}
-					class:dark={skill.type === 'dark'}
-					on:click={() => performAction(skill, $player, $currentEnemy)}
-					disabled={!$isPlayerTurn || $disableGUI}>
-					{skill.name} <small>{skill.cost}</small>
-				</button>
-				{/each}
-			</div>
-
 			<PressTurns player={$player} currentEnemy={$currentEnemy} isPlayerTurn={$isPlayerTurn} />
 
 			<BattleLog {battleLog} {currentEnemy} />
 
+			<ActionMenu player={$player} disableGUI={$disableGUI} isPlayerTurn={$isPlayerTurn} on:menuselect={handleMenuSelect} />
+
 		{/if}
 	</div>
-
-
 
   <!-- <div id="camerahud">
 	<div class="info-panel">
@@ -745,104 +725,6 @@
 	top: 5%;
 	right: 3%;
   }
-
-  .header {
-	grid-column: 1 / 3;
-	text-align: center;
-	background-color: #ff004a;
-	color: #fff;
-	padding: 0px;
-  }
-
-  .left-section {
-	display: flex;
-	flex-direction: column;
-	overflow-y: auto;
-  }
-
-  .player-actions {
-	text-align: center;
-	margin: 10px auto 0;
-	max-height: 100%;
-	position: absolute;
-	bottom: 4vh;
-	width: 100%;
-	left: 0;
-  }
-
-  button {
-	padding: 10px 15px;
-	background-color: #555;
-	color: #fff;
-	cursor: pointer;
-	font-weight: bold;
-	font-size: 1rem;
-	transition: background-color 0.3s ease;
-	position: relative;
-	text-shadow: 0 0 5px #000;
-	border: 2px solid rgba(255,255,255,0.3);
-	outline: 3px solid #000;
-  }
-
-  button:disabled {
-	background-color: #000 !important;
-	color: #333 !important;
-	cursor: not-allowed !important;
-  }
-
-  .skill-button {
-	margin: 10px;
-	color: #fff;
-	cursor: pointer;
-	font-weight: bold;
-	transition: background-color 0.3s ease;
-	display: inline-block;
-	text-align: left;
-  }
-
-  .skill-button small {
-	position: absolute;
-	font-size: 0.8rem;
-	top: -10px;
-	right: -10px;
-	text-align: center;
-	border-radius: 50%;
-	background-color: #000;
-	width: 25px;
-	height: 21px;
-	padding-top: 4px;
-  }
-
-  .skill-button.physical small { display: none; }
-
-  .skill-button.healing {
-	background-color: #008080;
-  }
-  .skill-button.ailment {
-	background-color: #524774;
-  }
-  .skill-button.fire {
-	background-color: #d53515;
-  }
-  .skill-button.electric {
-	background-color: #dfbd08;
-  }
-  .skill-button.ice {
-	background-color: #59b2cf;
-  }
-  .skill-button.force {
-	background-color: #228b22;
-  }
-  .skill-button.light {
-	background-color: #fffff0;
-	color: #000000;
-  }
-  .skill-button.dark {
-	background-color: #8b0000;
-  }
-
-
-
 
 /*  #camerahud {
 	position: absolute;

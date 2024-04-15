@@ -39,10 +39,16 @@
   },
   "skills": [
     {
-      "name": "Basic Attack",
+      "name": "Punch",
       "type": "physical",
       "cost": 0,
       "power": 10
+    },
+    {
+      "name": "Gaea Rage",
+      "type": "physical",
+      "cost": 0,
+      "power": 200
     },
     {
       "name": "Agi 🔥",
@@ -78,7 +84,7 @@
       "name": "Dia ❤️‍🩹",
       "type": "healing",
       "cost": 6,
-      "power": 10
+      "power": 30
     },
     {
       "name": "Diarahan ❤️",
